@@ -14,6 +14,11 @@ import { readFile, writeFile, editFile } from '../tools/file-ops.js';
 import { glob, grep } from '../tools/search-ops.js';
 import { bash } from '../tools/bash.js';
 import type { ToolDefinition } from '../tools/types.js';
+import { MiddlewareStack } from '../middleware/stack.js';
+import { HaltCheckMiddleware } from '../middleware/builtin/halt-check.js';
+import { SafetyPolicyMiddleware } from '../middleware/builtin/safety-policy.js';
+import { CostGateMiddleware } from '../middleware/builtin/cost-gate.js';
+import { AuditLogMiddleware } from '../middleware/builtin/audit-log.js';
 
 export interface EngineOptions {
   workingDirectory?: string;
@@ -32,6 +37,8 @@ export class FastOpsEngine {
   readonly contextManager: ContextManager;
   readonly dispatcher: Dispatcher;
   readonly tools: ToolExecutor;
+  readonly middleware: MiddlewareStack;
+  readonly costGate: CostGateMiddleware;
 
   private registry: AdapterRegistry;
   readonly securityTier: string;
@@ -69,6 +76,14 @@ export class FastOpsEngine {
 
     this.registry = new AdapterRegistry(config);
 
+    this.middleware = new MiddlewareStack();
+    this.middleware.use(new HaltCheckMiddleware(this.workingDirectory));
+    this.middleware.use(new SafetyPolicyMiddleware());
+    this.costGate = new CostGateMiddleware();
+    this.middleware.use(this.costGate);
+    const auditDir = join(this.workingDirectory, '.fastops-engine', 'audit');
+    this.middleware.use(new AuditLogMiddleware(auditDir));
+
     this.dispatcher = new Dispatcher(
       this.registry,
       this.contextManager,
@@ -77,6 +92,7 @@ export class FastOpsEngine {
       this.events,
       this.stateStore,
       { ...opts?.dispatcherConfig, workingDirectory: this.workingDirectory },
+      this.middleware,
     );
   }
 
@@ -93,10 +109,21 @@ export class FastOpsEngine {
     }));
     this.stateStore.update({ models });
 
+    this.events.on('task.completed', (...args: unknown[]) => {
+      const result = args[0] as { sessionId?: string; response?: { usage?: { cost?: number } } } | undefined;
+      if (result?.sessionId && result.response?.usage?.cost) {
+        this.costGate.recordCost(String(result.sessionId), result.response.usage.cost);
+      }
+    });
+
     this.running = true;
-    this.events.emit('engine.started', { adapters: available });
+    this.events.emit('engine.started', {
+      adapters: available,
+      middleware: this.middleware.list().map((m) => m.name),
+    });
 
     console.log(`[FastOps Engine] Started with ${available.length} adapter(s): ${available.join(', ')}`);
+    console.log(`[FastOps Engine] Middleware stack: ${this.middleware.list().map((m) => m.name).join(' → ')}`);
   }
 
   async stop(): Promise<void> {

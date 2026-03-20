@@ -6,6 +6,8 @@ import type { ToolExecutor } from '../tools/executor.js';
 import type { ToolResult } from '../tools/types.js';
 import type { EventBus } from './event-bus.js';
 import type { StateStore } from './state-store.js';
+import type { MiddlewareStack } from '../middleware/stack.js';
+import type { MiddlewareContext } from '../middleware/types.js';
 
 export interface TaskPayload {
   type: 'contract' | 'freeform' | 'qc' | 'review';
@@ -50,6 +52,7 @@ export class Dispatcher {
   private events: EventBus;
   private stateStore: StateStore;
   private config: DispatcherConfig;
+  private middleware?: MiddlewareStack;
 
   constructor(
     registry: AdapterRegistry,
@@ -59,6 +62,7 @@ export class Dispatcher {
     events: EventBus,
     stateStore: StateStore,
     config?: Partial<DispatcherConfig>,
+    middleware?: MiddlewareStack,
   ) {
     this.registry = registry;
     this.contextManager = contextManager;
@@ -67,6 +71,7 @@ export class Dispatcher {
     this.events = events;
     this.stateStore = stateStore;
     this.config = { ...DEFAULT_CONFIG, ...config };
+    this.middleware = middleware;
   }
 
   async dispatch(sessionId: string, task: TaskPayload): Promise<TaskResult> {
@@ -138,8 +143,36 @@ export class Dispatcher {
           maxTokens: 4096,
         };
 
+        if (this.middleware) {
+          const mwCtx: MiddlewareContext = {
+            sessionId,
+            modelId: session.modelId,
+            provider: session.provider,
+            request,
+            metadata: { taskType: task.type, contractId: task.contractId },
+          };
+          const preResult = await this.middleware.executeRequest(mwCtx);
+          if (preResult.action === 'block') {
+            throw new Error(`Blocked by middleware: ${preResult.reason}`);
+          }
+        }
+
         const response = await adapter.chat(request);
         lastResponse = response;
+
+        if (this.middleware) {
+          const mwCtx: MiddlewareContext = {
+            sessionId,
+            modelId: session.modelId,
+            provider: session.provider,
+            request,
+            metadata: {},
+          };
+          const postResult = await this.middleware.executeResponse(mwCtx, response);
+          if (postResult.action === 'block') {
+            throw new Error(`Response blocked by middleware: ${postResult.reason}`);
+          }
+        }
 
         this.sessions.addTokens(sessionId, response.usage.inputTokens + response.usage.outputTokens);
         this.sessions.addCost(sessionId, response.usage.cost);
