@@ -32,8 +32,15 @@ export class InMemoryCommsBus implements CommsBus {
   private readCursors = new Map<string, Map<string, string>>();
   private onPersist?: (msg: CommsMessage) => void;
 
-  constructor(opts?: { onPersist?: (msg: CommsMessage) => void }) {
+  constructor(opts?: { onPersist?: (msg: CommsMessage) => void; initialMessages?: CommsMessage[] }) {
     this.onPersist = opts?.onPersist;
+    if (opts?.initialMessages) {
+      this.messages = [...opts.initialMessages];
+    }
+  }
+
+  loadHistory(messages: CommsMessage[]): void {
+    this.messages = [...messages];
   }
 
   send(partial: Omit<CommsMessage, 'id' | 'ts'>): CommsMessage {
