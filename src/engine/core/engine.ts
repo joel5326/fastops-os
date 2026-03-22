@@ -19,12 +19,15 @@ import { HaltCheckMiddleware } from '../middleware/builtin/halt-check.js';
 import { SafetyPolicyMiddleware } from '../middleware/builtin/safety-policy.js';
 import { CostGateMiddleware } from '../middleware/builtin/cost-gate.js';
 import { AuditLogMiddleware } from '../middleware/builtin/audit-log.js';
+import { ContractEngine } from '../contracts/engine.js';
+import type { Contract, ClaimResult } from '../contracts/types.js';
 
 export interface EngineOptions {
   workingDirectory?: string;
   stateFilePath?: string;
   promptsDir?: string;
   commsExportDir?: string;
+  contractsStatePath?: string;
   dispatcherConfig?: Partial<DispatcherConfig>;
   toolPermissions?: Record<string, string[]>;
 }
@@ -39,6 +42,7 @@ export class FastOpsEngine {
   readonly tools: ToolExecutor;
   readonly middleware: MiddlewareStack;
   readonly costGate: CostGateMiddleware;
+  readonly contracts: ContractEngine;
 
   private registry: AdapterRegistry;
   readonly securityTier: string;
@@ -73,6 +77,9 @@ export class FastOpsEngine {
         this.tools.setPermissions(modelId, tools);
       }
     }
+
+    const contractsStatePath = opts?.contractsStatePath ?? join(this.workingDirectory, '.fastops-engine', 'contracts.json');
+    this.contracts = new ContractEngine(contractsStatePath);
 
     this.registry = new AdapterRegistry(config);
 
@@ -159,6 +166,19 @@ export class FastOpsEngine {
 
   async dispatchParallel(tasks: Array<{ sessionId: string; task: TaskPayload }>): Promise<TaskResult[]> {
     return this.dispatcher.dispatchParallel(tasks);
+  }
+
+  loadContracts(contracts: Contract[]): void {
+    this.contracts.loadContracts(contracts);
+    this.events.emit('contracts.loaded', { count: contracts.length });
+  }
+
+  claimContract(contractId: string, modelId: string): ClaimResult {
+    const result = this.contracts.claim(contractId, modelId);
+    if (result.success) {
+      this.events.emit('contract.claimed', { contractId, modelId });
+    }
+    return result;
   }
 
   private registerBuiltInTools(): void {

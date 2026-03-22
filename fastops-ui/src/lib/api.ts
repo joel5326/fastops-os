@@ -1,0 +1,100 @@
+const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3100';
+
+async function api<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    ...init,
+    headers: { 'Content-Type': 'application/json', ...init?.headers },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(body.error || res.statusText);
+  }
+  return res.json();
+}
+
+export interface SessionInfo {
+  id: string;
+  modelId: string;
+  provider: string;
+  status: string;
+  messageCount: number;
+  costAccumulated: number;
+  tokensBurned: number;
+}
+
+export interface ChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+export interface ContractInfo {
+  id: string;
+  name: string;
+  status: string;
+  wave: number;
+  claimedBy?: string;
+  qcBy?: string;
+  validatedBy?: string;
+  dependencies: string[];
+  blocks: string[];
+  artifacts: string[];
+}
+
+export interface AdapterInfo {
+  available: string[];
+  models: Array<{ provider: string; model: string }>;
+}
+
+export interface CommsMessage {
+  id: string;
+  from: string;
+  channel: string;
+  content: string;
+  ts: string;
+}
+
+export const apiClient = {
+  health: () => api<{ status: string; running: boolean }>('/api/health'),
+
+  listSessions: () => api<SessionInfo[]>('/api/sessions'),
+  createSession: (modelId: string, model?: string) =>
+    api<{ id: string; modelId: string }>('/api/sessions', {
+      method: 'POST',
+      body: JSON.stringify({ modelId, model }),
+    }),
+  sendMessage: (sessionId: string, content: string) =>
+    api<{ content: string; usage: any; duration: number; toolCallCount: number }>(`/api/sessions/${sessionId}/message`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    }),
+  getMessages: (sessionId: string) => api<ChatMessage[]>(`/api/sessions/${sessionId}/messages`),
+  deleteSession: (sessionId: string) => api<void>(`/api/sessions/${sessionId}`, { method: 'DELETE' }),
+
+  listContracts: (status?: string) => api<ContractInfo[]>(`/api/contracts${status ? `?status=${status}` : ''}`),
+  getContract: (id: string) => api<ContractInfo>(`/api/contracts/${id}`),
+
+  getAdapters: () => api<AdapterInfo>('/api/adapters'),
+
+  getComms: (channel: string, limit = 50) => api<CommsMessage[]>(`/api/comms/${channel}?limit=${limit}`),
+  listChannels: () => api<{ channels: string[] }>('/api/comms'),
+  sendComms: (channel: string, content: string, from?: string) =>
+    api<CommsMessage>('/api/comms/send', {
+      method: 'POST',
+      body: JSON.stringify({ channel, content, from }),
+    }),
+
+  getState: () => api<any>('/api/state'),
+  killSwitch: () => api<{ halted: boolean }>('/api/kill-switch', { method: 'POST' }),
+  releaseKillSwitch: () => api<{ halted: boolean }>('/api/kill-switch', { method: 'DELETE' }),
+};
+
+export async function streamMessage(
+  sessionId: string,
+  content: string,
+  onChunk: (text: string) => void,
+  onDone: (result: any) => void,
+): Promise<void> {
+  const result = await apiClient.sendMessage(sessionId, content);
+  onChunk(result.content);
+  onDone(result);
+}

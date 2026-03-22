@@ -4,15 +4,21 @@
   "description": "FastOps OS — Multi-Model AI Orchestration Engine",
   "private": true,
   "type": "module",
+  "bin": {
+    "fastops": "./dist/cli.js"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/server/index.ts",
     "start": "node dist/server/index.js",
+    "fastops": "tsx src/cli.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "lint": "eslint src/",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "ui:dev": "cd fastops-ui && npm run dev",
+    "ui:build": "cd fastops-ui && npm run build"
   },
   "engines": {
     "node": ">=20.0.0"

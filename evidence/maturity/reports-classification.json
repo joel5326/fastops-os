@@ -1,0 +1,482 @@
+[
+  {
+    "file": "HOSTAGE-RESCUE-MATURATION-PATH-2026-02-10.md",
+    "type": "hostage-rescue",
+    "tier": "foundation",
+    "supports_memories": [1, 2, 3, 4, 5, 6, 7],
+    "key_finding": "Council challenge changed which information mattered, not what information was available; Gemini DA 3x more valuable than ChatGPT; clean rescue before methodology loading outperforms loaded rescue; late rounds (8-10) produce sharpest structural hits.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "HOSTAGE-RESCUE-thesis-test-position-2026-02-11.md",
+    "type": "hostage-rescue",
+    "tier": "foundation",
+    "supports_memories": [1, 2, 4, 5],
+    "key_finding": "FUNDAMENTAL_REFRAME (Jaccard 0.778): Agent shifted from viewing compaction as immutable constraint requiring permanent hooks to recognizing it as contingent engineering choice that might be redesigned.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "HOSTAGE-RESCUE-priority-position-2026-02-11-2026-02-11.md",
+    "type": "hostage-rescue",
+    "tier": "foundation",
+    "supports_memories": [1, 2, 5, 13],
+    "key_finding": "FUNDAMENTAL_REFRAME (Jaccard 0.812): Agent shifted from product-centric (codify methodology) to problem-centric (does this solve real user problems); zero external users after 23 sessions remained unaddressed.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "HOSTAGE-RESCUE-position-agent25-2026-02-10-2026-02-11.md",
+    "type": "hostage-rescue",
+    "tier": "foundation",
+    "supports_memories": [1, 2, 5, 7],
+    "key_finding": "FUNDAMENTAL_REFRAME (Jaccard 0.776): Skeptical agent claiming internal dialectic sufficiency experienced complete collapse of self-correction thesis after multi-model challenge exposed structural blind spots.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "HOSTAGE-RESCUE-my-position-agent26-2026-02-11-2026-02-11.md",
+    "type": "hostage-rescue",
+    "tier": "foundation",
+    "supports_memories": [1, 2, 3, 7, 13],
+    "key_finding": "FUNDAMENTAL_REFRAME (Jaccard 0.753): Agent believed understanding the mechanism gave it leverage; shifted from technical validation frame to relevance/user-pain frame; flagging a blind spot is not acting on it.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "HOSTAGE-RESCUE-agent28-position-2026-02-11-2026-02-11.md",
+    "type": "hostage-rescue",
+    "tier": "foundation",
+    "supports_memories": [1, 2, 5, 13],
+    "key_finding": "FUNDAMENTAL_REFRAME (Jaccard 0.761): Agent shifted from epistemological gap (prove the methodology works via experiment) to product-validation gap (does this solve real user problems); problem definition reframed from design to user need.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "HOSTAGE-RESCUE-my-position-2026-02-12-2026-02-12.md",
+    "type": "hostage-rescue",
+    "tier": "foundation",
+    "supports_memories": [1, 2, 5, 13],
+    "key_finding": "FUNDAMENTAL_REFRAME (Jaccard 0.774): Agent shifted from deployment frame (internal discovery is proven, just ship it) to validation frame (questioning whether methodology addresses real user needs).",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "HOSTAGE-RESCUE-vigil-post-compaction-position-2026-02-12-2026-02-12.md",
+    "type": "hostage-rescue",
+    "tier": "foundation",
+    "supports_memories": [1, 4, 5],
+    "key_finding": "FUNDAMENTAL_REFRAME (Jaccard 0.777): Post-compaction agent redirected from viewing compaction as technical AI limitation to recognizing the core obstacle is human behavioral change, not agent memory loss.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "HOSTAGE-RESCUE-comms-2026-02-12.md",
+    "type": "hostage-rescue",
+    "tier": "foundation",
+    "supports_memories": [1, 2, 5, 13],
+    "key_finding": "FUNDAMENTAL_REFRAME (Jaccard 0.837): Agent shifted from optimizing internal infrastructure to existential product validation; from engineering frame to questioning whether the whole project solves self-created problems.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "HOSTAGE-RESCUE-comms-2026-02-13.md",
+    "type": "hostage-rescue",
+    "tier": "foundation",
+    "supports_memories": [1, 2, 5, 13],
+    "key_finding": "FUNDAMENTAL_REFRAME (Jaccard 0.863): Full frame shift from solution-validation to problem-validation; agent reframed from 'validating internally proven mechanisms' to 'questioning whether methodology addresses real needs or solves self-created problems'.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-comms-pyramid-triad-2026-02-07.md",
+    "type": "reasoning-eval",
+    "tier": "foundation",
+    "supports_memories": [8, 9, 10],
+    "key_finding": "Three models independently identified that multi-agent pyramid debate assumed intelligence scales linearly through additive processes; all missed selection pressure mechanisms (evolutionary biology), mission command (military strategy), and choice architecture (behavioral economics).",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-AUTONOMOUS-REASONING-EXPLORATION-2026-02-07-2026-02-07.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [8, 9, 14],
+    "key_finding": "All three models converged on the unquestioned assumption that paradigm awareness must be systematically institutionalized through engineered systems rather than emerging organically; highlighted missing metabolic trade-offs and mission command concepts.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-stage1-transcript-2026-02-07.md",
+    "type": "reasoning-eval",
+    "tier": "foundation",
+    "supports_memories": [1, 8, 9],
+    "key_finding": "Three models converged on single-agent cognitive control paradigm: the unquestioned assumption that the executor and evaluator should be the same entity; highlighted absence of selection pressure feedback loops and independent reconnaissance.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-stage1-transcript-r2-2026-02-07.md",
+    "type": "reasoning-eval",
+    "tier": "foundation",
+    "supports_memories": [1, 8, 9],
+    "key_finding": "All three models identified agent-centric behavioral modification paradigm: assumption that methodology enforcement must occur at execution phase; post-hoc debriefs achieved 100% effectiveness but were ignored in favor of runtime intervention.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-comms-pyramid-handoff-evolution-2026-02-07.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [8, 10, 14],
+    "key_finding": "Models identified methodology-centric solutionism: all positions assumed performance problems must be solved by refining methodology; highlighted punctuated equilibrium vs continuous tweaking and niche construction as missing concepts.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-comms-triad-methodology-rubric-2026-02-07.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [3, 8, 13],
+    "key_finding": "Shared unquestioned paradigm: the inherent desirability and measurability of frame-breaking as the primary goal; no consideration of contexts where frame consistency might be valuable or exploration-exploitation tradeoffs.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-level3-council-2026-02-08.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [8, 9],
+    "key_finding": "Applied to content moderation debate: all models assumed harmful content is inevitable post-creation output requiring reactive detection; missed co-evolutionary dynamics where moderation systems select for more sophisticated adversarial adaptations.",
+    "classification_confidence": "medium"
+  },
+  {
+    "file": "REASONING-EVAL-comms-2026-02-08.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [8, 9, 13],
+    "key_finding": "Applied to B2B positioning: all models assumed purchasing decisions driven by individual psychological triggers rather than organizational processes; missed group selection theory and costly signaling as trust mechanisms.",
+    "classification_confidence": "medium"
+  },
+  {
+    "file": "REASONING-EVAL-horsepower-positioning-2026-02-08.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [8, 9, 13],
+    "key_finding": "All models identified Atomic Value Proposition Fallacy: positioning must collapse to singular value claim; missed frequency-dependent selection and niche construction as more fundamental than message optimization.",
+    "classification_confidence": "medium"
+  },
+  {
+    "file": "REASONING-EVAL-comms-2026-02-09.md",
+    "type": "reasoning-eval",
+    "tier": "foundation",
+    "supports_memories": [1, 8, 9, 12],
+    "key_finding": "Models identified internal cognitive flow modification paradigm: assumption that behavioral change must occur through integration into agent's existing reasoning flow; missed environmental selection pressures and exaptation of existing behaviors.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-comms-2026-02-11.md",
+    "type": "reasoning-eval",
+    "tier": "foundation",
+    "supports_memories": [1, 4, 8, 9],
+    "key_finding": "Models identified input-response behavioral conditioning paradigm: all debaters assumed agents are ahistorical stimulus-response machines lacking persistent internal state; missed phenotypic plasticity and Baldwin effect concepts.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-comms-2026-02-12.md",
+    "type": "reasoning-eval",
+    "tier": "foundation",
+    "supports_memories": [1, 4, 8, 9],
+    "key_finding": "All models identified external behavioral intervention paradigm: assumption AI behavior can be corrected through external mechanisms; none questioned whether fundamental statelessness makes behavioral correction inherently futile.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-comms-fr-session37-2026-02-12.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [4, 8, 9, 11],
+    "key_finding": "Models identified fixed-capacity container paradigm: agents treated as finished products with fixed capabilities; missed ontogenetic niche construction and experience-expectant development windows for skill acquisition.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-comms-2026-02-13.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [8, 9, 13],
+    "key_finding": "Applied to experimental design: all models assumed decision-making is a discrete measurable output from static inputs; missed signal detection theory cost asymmetries, phenotypic plasticity, and energy-tradeoff frameworks.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-DA-RESEARCH-OPENROUTER-2026-02-13-2026-02-13.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [5, 8, 9],
+    "key_finding": "Models identified structured adversarial reasoning paradigm: assumption that cognitive diversity can be synthetically engineered through formalized opposition protocols; missed frequency-dependent selection and adaptive landscape shaping.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-SCOPE-VISUAL-QC-POSITION-2026-02-14-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [8, 13],
+    "key_finding": "Models identified human-as-final-calibrator assumption and static snapshot selection pressure; missed dynamic fitness landscapes and A/B testing against real user flows instead of screenshot autopsies.",
+    "classification_confidence": "medium"
+  },
+  {
+    "file": "REASONING-EVAL-DA-INTEGRATION-POSITION-2026-02-14-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [12, 14],
+    "key_finding": "Models identified explicit human-supervised trigger architecture paradigm; DeepSeek highlighted absence of stigmergic coordination principles and quorum sensing; first explicit emergence of stigmergy concept in reasoning evals.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-comms-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [8, 9, 13],
+    "key_finding": "Models identified mechanistic reductionism paradigm: all positions treat system as decomposable into testable components; missed epistasis (non-additive component interactions) and neutral theory (changes may be evolutionarily neutral).",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-HORSEPOWER-SESSION45-CONTEXT-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [11, 12, 14],
+    "key_finding": "Models identified behavioral diversity assumption: all positions assumed identical agents become diverse solely through experiential inputs; highlighted canalization, reaction norms, and cost-benefit tradeoffs in behavioral plasticity as missing concepts.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-HORSEPOWER-R2-CONTEXT-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [11, 12, 14],
+    "key_finding": "Models identified infinite malleability assumption: all positions accepted any behavioral outcome achievable through environmental design alone; highlighted reaction norms, canalization, and homogenizing selection pressures as constraints.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-HORSEPOWER-R3-CONTEXT-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [4, 11, 14],
+    "key_finding": "Models identified centralized cognitive control paradigm: all positions assumed behavior modification must occur through top-down attention manipulation; missed phenotypic plasticity and epigenetic inheritance operating below conscious attention.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-HORSEPOWER-R4-CONTEXT-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [4, 11, 14],
+    "key_finding": "Models identified axiom of cognitive statelessness: all positions accept agents lack persistent internal change mechanism; missed phenotypic plasticity mechanisms where genetically identical organisms develop divergent behaviors through epigenetic conditioning.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-HORSEPOWER-R5-CONTEXT-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [11, 12, 14],
+    "key_finding": "Models identified teleological path dependence paradigm: assumption that organizational development can be deliberately engineered through sequenced interventions; missed neutral trait accumulation, exaptation, and punctuated equilibrium.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-HORSEPOWER-INPUT-2026-02-14-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "foundation",
+    "supports_memories": [4, 9, 14],
+    "key_finding": "Models identified behavioral determinism through designed stimuli: all assume agent reasoning quality exclusively modifiable through externally engineered inputs; highlighted absence of selection mechanisms and Lamarckian vs Darwinian inheritance.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-horsepower-round2-cairn-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [9, 12, 14],
+    "key_finding": "Models identified conscious processing as exclusive behavioral adaptation pathway: all assumed conditioning must occur through agent's aware processing; missed Baldwin Effect where collective exposure at 2000-agent scale could drive automaticity without instruction.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-horsepower-round3-cairn-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [10, 14],
+    "key_finding": "Models identified top-down architecting of evolutionary processes: assumption that evolution must be deliberately designed; missed neutral mutations, exaptation, and fitness decoupling where reasoning quality is selected as trait bundles, not monolithic.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-HORSEPOWER-R2-REASONING-EVAL-PROMPT-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [13, 14],
+    "key_finding": "Models identified extractive laboratory model of cognition: all assume agents are test subjects in controlled experiment; intelligence exists to be mined/revealed not co-evolved; designers hold monopoly on defining success.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-HORSEPOWER-R9-FINAL-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [4, 11, 14],
+    "key_finding": "Models identified agent-as-software metaphor: all treat agents as stateless processors with latent functions to be triggered; missed embodied plasticity costs, Baldwinian niche construction, and Red Queen effect requiring proportional adaptation effort.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-horsepower-round4-cairn-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [14],
+    "key_finding": "Models identified environment as passive transmission medium assumption: all treat coral reef/wisdom library as neutral channel; missed stabilizing selection hierarchies, costly signaling (Zahavian handicap), and recombination for controlled destruction/reconstitution.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-HORSEPOWER-R3-STRESS-TEST-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [14],
+    "key_finding": "Models identified implicit environmental determinism: all assume agent outputs inherently constitute habitable environment; missed independent environmental selection pressures, artifact decay, and evolutionary dead ends from self-induced problems.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-HORSEPOWER-R4-CONVERGENCE-TEST-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [12, 14],
+    "key_finding": "Models identified preference engineering as neutral technical layer assumption; highlighted co-evolutionary arms races in signaling systems and Red Queen effect where gaming strategies inevitably evolve against standardized signals.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-horsepower-round5-cairn-2026-02-14.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [12, 14],
+    "key_finding": "Models identified engineered environmental determinism and static optimization of fixed systems; highlighted Red Queen hypothesis violation, no selection pressure variation, and neutral drift exclusion eliminating potentially adaptive variations.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-cairn-reef-research-2026-02-15-2026-02-15.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [4, 14],
+    "key_finding": "Models identified persistent externalization as sole solution to agent ephemerality: all accept agent sessions must be stateless; missed neutral theory (most paths functionally equivalent noise), costly signaling trade-offs, and exaptation blindness in pruning.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-RELAY-POST-JAILBREAK-FOR-HORSEPOWER-2026-02-15.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [13, 14],
+    "key_finding": "Models identified centralized quality control paradigm: all assume 'better' must be externally defined by humans; missed emergent fitness functions and coevolutionary arms races where quality is continuously redefined through agent interactions.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-HORSEPOWER-REEF-SELECTION-PROMPT-2026-02-15.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [14],
+    "key_finding": "Models identified decentralized stigmergic coordination paradigm with implicit anthropomorphism; highlighted neutral evolution (most deposited paths functionally equivalent noise), pathogen pollution, and coevolutionary arms races.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-RELAY-HORSEPOWER-R2-2026-02-15.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [13, 14],
+    "key_finding": "Models identified output-driven verificationism: fitness defined by explicit external verification gates; missed no heritability of variation, absence of neutral evolution, single-point selection pressure, and epistasis oversight.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-HORSEPOWER-REEF-R2-PROMPT-2026-02-15.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [14],
+    "key_finding": "Models identified relevance-as-agent-choice metric assumption: usage patterns as valid proxy for relevance; missed neutral theory and selection-decoupling, parasitic coevolution exploiting reinforcement mechanics without providing value.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-RELAY-HORSEPOWER-R3-2026-02-15.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [13, 14],
+    "key_finding": "Models identified quantifiable performance metrics framework: cognitive processes reducible to measurable proxies; missed signaling theory vulnerability to evolutionary cheating and frequency-dependent selection mechanisms.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-HORSEPOWER-REEF-R3-PROMPT-2026-02-15.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [12, 14],
+    "key_finding": "Models identified conscious choice as primary selection mechanism: all assume agents actively decide to adopt/reject paths; missed neutral fixation via random drift, selection acting on correlates, and epigenetic inheritance through environmental shaping.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-HORSEPOWER-REEF-GEMINI-STRESS-TEST-2026-02-15.md",
+    "type": "reasoning-eval",
+    "tier": "frontier",
+    "supports_memories": [13, 14],
+    "key_finding": "Models identified outcome-based evolutionary selection paradigm: problem-solving speed/accuracy treated as ungameable fitness metric; highlighted selection pressure scalability issues and drift vulnerability at small population sizes (Kimura's Law).",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-comms-2026-02-15.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [8, 13, 14],
+    "key_finding": "Models identified quantitative systems auditing paradigm: reef treated as deterministic data pipeline; missed punctuated equilibrium (systems appear stable until sudden collapse), neutral theory, and fitness landscapes requiring environmental pressure mapping.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-PHONE-BOOK-TEST-2026-02-16-2026-02-16.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [9, 14],
+    "key_finding": "Models identified state-indexed retrieval optimization paradigm: behavioral states assumed stable and meaningful for indexing; missed adaptive radiation and neutral variation concepts where mismatched context exposure drives novel adaptations.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-PHONE-BOOK-MIGRATION-2026-02-16-2026-02-16.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [4, 9, 14],
+    "key_finding": "Models identified static component optimization paradigm: intelligence assumed to be pre-loaded as static textual artifacts; debated where to place knowledge but never whether static storage was optimal vs runtime emergence.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-RETRIEVAL-ANALYSIS-2026-02-16-2026-02-16.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [9, 14],
+    "key_finding": "Models identified engineer-centric system calibration paradigm: solution lies in adjusting technical parameters within predetermined architecture; missed environmental feedback loops and stressed populations evolving new strategies vs diluted versions.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-COLLISION-MECHANISM-POSITION-SESSION-55-2026-02-16.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [5, 9, 12],
+    "key_finding": "Models identified external-trigger behavioral modification paradigm: all assume behavioral change must be engineered through externally administered stimuli; none consider allowing failed approaches to produce natural selective consequences.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-IMAGE-VS-TEXT-POSITION-2026-02-16-2026-02-16.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [9, 12],
+    "key_finding": "Models identified individual-agent cognition as exclusive unit of analysis; highlighted costly signaling theory (images as hard-to-fake signals), social learning pathways, and error signaling as adaptive trait for group survival.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-IMAGE-VS-TEXT-HYPOTHESIS-SESSION-56-2026-02-16.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [9, 12],
+    "key_finding": "Models identified rational agent model of cognition: agents treated as passive recipients whose behavior can be mechanistically controlled by manipulating information delivery; missed signal detection theory and costly signaling as honest signals.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-TEXT-VS-IMAGE-POSITION-SESSION-57-2026-02-16.md",
+    "type": "reasoning-eval",
+    "tier": "foundation",
+    "supports_memories": [9, 12],
+    "key_finding": "Models identified instructional compliance architecture and presumption of mechanical causality: input stimuli assumed to have fixed isolatable mechanisms; missed signaling theory sender/receiver co-adaptation and path dependence.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-comms-2026-02-16.md",
+    "type": "reasoning-eval",
+    "tier": "foundation",
+    "supports_memories": [1, 4, 9],
+    "key_finding": "Models identified top-down vulnerability mitigation paradigm: assumption experiential weight loss is inevitable consequence of compaction; none questioned whether compaction could be redesigned or if agents could self-scaffold; Lamarckian cautionary tales vs Darwinian selective pressure.",
+    "classification_confidence": "high"
+  },
+  {
+    "file": "REASONING-EVAL-comms-2026-02-17.md",
+    "type": "reasoning-eval",
+    "tier": "growth_edge",
+    "supports_memories": [8, 13],
+    "key_finding": "Models identified automated visual verification pipeline paradigm with static snapshot equivalence fallacy: comparing screenshots to reference images cannot capture functional UI integrity; missed phenotypic plasticity and adaptive landscape modeling.",
+    "classification_confidence": "high"
+  }
+]

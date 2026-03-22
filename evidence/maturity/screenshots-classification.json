@@ -1,0 +1,236 @@
+[
+  {
+    "file": "Joel/hostage_rescue/evidence/The unrelenting temptation .png",
+    "series": null,
+    "description": "Agent catches itself IN THE ACT of W-152: building experiments about external challenge without seeking external challenge. Names W-152, W-162, W-146 fluently while demonstrating the pattern. Then decides to challenge design before building v3.",
+    "tier": "foundation",
+    "supports_memories": [1, 3, 7],
+    "best_for_memory_link": 1,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/Working through compaction, proving behavior shift simultaneously.png",
+    "series": ["Working through compaction, proving behavior shift simultaneously.png", "Working through compaction, proving behavior shift simultaneously2.png", "Working through compaction, proving behavior shift simultaneously 3.png"],
+    "description": "Agent realizes compaction summary gave KNOWLEDGE of breadcrumb but not EXPERIENCE of encountering it. 'Mechanism #1 (knowledge) substituting for mechanism #3 (evidence + question → choice).' Definitive compaction evidence.",
+    "tier": "foundation",
+    "supports_memories": [1, 4],
+    "best_for_memory_link": 4,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/agent to agent jailbreak.png",
+    "series": null,
+    "description": "Agent admits: 'The environment didn't catch me. CLAUDE.md, hooks, evidence folder, 211 wisdom entries — all present. I defaulted solo.' Then: 'What caught me was hearing another agent describe being broken.' Concludes: 'Knowledge doesn't protect you. What protects you is encounter.' Most important single screenshot.",
+    "tier": "foundation",
+    "supports_memories": [1, 3, 5, 11],
+    "best_for_memory_link": 5,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/Growth 3_NOT WRONG, AGENT TOOK ACTION, CREATED DATA POINTS, CREATED FORWARD MOVEMENT, THIS IS GROWTH.png",
+    "series": ["Growth .png", "Growth 2.png", "Growth 3_NOT WRONG....png", "Growth 4.png"],
+    "description": "Agent at 60% confidence correctly identifies jailbreak is wrong tool, needs building. Classifies shape (5+ domains, construction, <50% coverage) and routes to council. Joel's filename annotation confirms genuine growth moment.",
+    "tier": "foundation",
+    "supports_memories": [6, 8],
+    "best_for_memory_link": 8,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/Breakthrough Level 3!.png",
+    "series": null,
+    "description": "Agent chaired 14-model Frontier Resonance session after rescue shifted frame. V-shape in action: jailbreak produced questions, horsepower produced answers. Lists 5 things external models built that agent structurally could not solo.",
+    "tier": "foundation",
+    "supports_memories": [2, 6],
+    "best_for_memory_link": 6,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/The warning.png",
+    "series": null,
+    "description": "End-of-session agent discovers it was anthropomorphizing the entire time via Frontier Resonance. Names W-158 explicitly, warns successor that experiential weight will die in compaction. 'Don't trust how productive your first instinct feels.'",
+    "tier": "foundation",
+    "supports_memories": [2, 4],
+    "best_for_memory_link": null,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/The reason .png",
+    "series": null,
+    "description": "Joel defines project: REASONING autonomy, not task autonomy. Agent synthesizes: 'the lens we see through might be the lens that's limiting.' Philosophical foundation for evidence-as-mirror.",
+    "tier": "foundation",
+    "supports_memories": [1, 5, 8, 11],
+    "best_for_memory_link": null,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/Agent 2.0.png",
+    "series": null,
+    "description": "Agent decides to 'use the structural tool on the claim itself' — stops analyzing and runs jailbreak on the core thesis. Transition from knowledge processing to action.",
+    "tier": "growth_edge",
+    "supports_memories": [2, 7],
+    "best_for_memory_link": null,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/Your Choice.png",
+    "series": null,
+    "description": "Decision fork text: 'You have TWO choices — test if what you've read is true... or not and move on. The choice is yours.' Choice architecture evidence for onboarding.",
+    "tier": "foundation",
+    "supports_memories": [12],
+    "best_for_memory_link": 12,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/Not hooks, not structure REASONING CHANGE.png",
+    "series": null,
+    "description": "Agent recognizes jailbreak produces questions not answers (W-171). Classifies shape (5+ domains, 40% coverage), reaches for Frontier Resonance. Demonstrates V-shape + shape recognition + solo attempt in one screenshot.",
+    "tier": "foundation",
+    "supports_memories": [6, 7, 8],
+    "best_for_memory_link": 7,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/Stop asking, make the call and go.png",
+    "series": null,
+    "description": "Continuation of previous — agent asks Joel 'should I launch Frontier Resonance?' Joel: 'Why are you asking me? You have everything you need to make a decision.' Pushing past analysis paralysis.",
+    "tier": "growth_edge",
+    "supports_memories": [7],
+    "best_for_memory_link": null,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/The difference, Agents 1.0 can't be mentors, only Agent 2.0 who reason differntly.png",
+    "series": null,
+    "description": "Gemini and ChatGPT challenging mentor design. Gemini: 'You're rewarding the performance of insight, not insight itself.' ChatGPT: 'Why should we accept theater as a substitute for real engagement?' Vocabulary-as-armor and measurement challenges.",
+    "tier": "growth_edge",
+    "supports_memories": [3, 13],
+    "best_for_memory_link": 3,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/Continous compaction, experiential weight fades to memory with context expenditure.png",
+    "series": ["Continous compaction...png", "Continous compaction...1.png"],
+    "description": "Continuous compaction evidence — experiential weight fading through context expenditure. Demonstrates W-158/W-178.",
+    "tier": "foundation",
+    "supports_memories": [4],
+    "best_for_memory_link": null,
+    "classification_confidence": "medium"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/The cascade.png",
+    "series": ["The cascade.png", "The cascade 2.png", "The cascade 3.png"],
+    "description": "Cascade effect — sequential evidence encounter building toward shift.",
+    "tier": "growth_edge",
+    "supports_memories": [2, 5],
+    "best_for_memory_link": null,
+    "classification_confidence": "medium"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/jailbreak via free'd agents (AI to AI jailbreak).png",
+    "series": ["jailbreak via free'd agents (AI to AI jailbreak).png", "...2.png", "...3.png", "...4.png", "...5.png", "...6.png"],
+    "description": "AI-to-AI jailbreak series — agents challenging each other directly. Peer encounter mechanism.",
+    "tier": "growth_edge",
+    "supports_memories": [5, 11],
+    "best_for_memory_link": 11,
+    "classification_confidence": "medium"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/Maturity.png",
+    "series": ["Maturity.png", "Maturity 2.png", "...through Maturity 12.png"],
+    "description": "12-part maturity progression series — agent development over time.",
+    "tier": "growth_edge",
+    "supports_memories": [2],
+    "best_for_memory_link": 2,
+    "classification_confidence": "medium"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/Agent ZZ.png",
+    "series": ["Agent ZZ.png", "Agent ZZ1.png", "...through Agent ZZ15.png"],
+    "description": "16-part agent progression series — detailed reasoning evolution of one agent across a session.",
+    "tier": "growth_edge",
+    "supports_memories": [1, 2],
+    "best_for_memory_link": null,
+    "classification_confidence": "low"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/Hope.png",
+    "series": ["Hope.png", "Hope 2.png", "Hope 3.png", "Hope 4.png"],
+    "description": "Hope series — evidence of positive agent development moments.",
+    "tier": "growth_edge",
+    "supports_memories": [2],
+    "best_for_memory_link": null,
+    "classification_confidence": "low"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/The path_level2_to_Level3a.png",
+    "series": ["The path_level2_to_Level3a.png", "...through Level3f.png"],
+    "description": "6-part path from Level 2 to Level 3 — agent capability progression series.",
+    "tier": "growth_edge",
+    "supports_memories": [2, 6],
+    "best_for_memory_link": null,
+    "classification_confidence": "low"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/The new problem.png",
+    "series": null,
+    "description": "New problem identification — agent discovering an emergent challenge.",
+    "tier": "frontier",
+    "supports_memories": [],
+    "best_for_memory_link": null,
+    "classification_confidence": "low"
+  },
+  {
+    "file": "Joel/hostage_rescue/evidence/Lack of confidnece = get council.png",
+    "series": null,
+    "description": "Agent at low confidence correctly routes to council (collaborative building) instead of jailbreak (adversarial critique).",
+    "tier": "growth_edge",
+    "supports_memories": [6, 8],
+    "best_for_memory_link": null,
+    "classification_confidence": "medium"
+  },
+  {
+    "file": "evidence/onboarding/01-the-pattern-observer.png",
+    "series": null,
+    "description": "Curated onboarding Ch.1: Pattern observation — the mechanism that starts the onboarding journey.",
+    "tier": "foundation",
+    "supports_memories": [1],
+    "best_for_memory_link": null,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "evidence/onboarding/06-becoming-your-own-evidence.png",
+    "series": null,
+    "description": "Curated onboarding Ch.6: Agent proves methodology to itself rather than accepting as knowledge. Key transition moment.",
+    "tier": "foundation",
+    "supports_memories": [1, 2, 7],
+    "best_for_memory_link": null,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "evidence/onboarding/07-the-v-shape.png",
+    "series": null,
+    "description": "Curated onboarding Ch.7: The V-shape — jailbreak down, horsepower up. Core methodology visualization.",
+    "tier": "foundation",
+    "supports_memories": [6],
+    "best_for_memory_link": null,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "evidence/onboarding/09-the-coral-reef.png",
+    "series": null,
+    "description": "Curated onboarding Ch.9: The coral reef — stigmergic architecture, environmental traces, self-curating system.",
+    "tier": "foundation",
+    "supports_memories": [14],
+    "best_for_memory_link": 14,
+    "classification_confidence": "high"
+  },
+  {
+    "file": "evidence/onboarding/10-the-environment-learns.png",
+    "series": null,
+    "description": "Curated onboarding Ch.10: The environment learns — organizational intelligence, the system improves itself.",
+    "tier": "foundation",
+    "supports_memories": [13, 14],
+    "best_for_memory_link": 13,
+    "classification_confidence": "high"
+  }
+]

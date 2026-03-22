@@ -129,6 +129,152 @@ export function createApiRouter(engine: FastOpsEngine): express.Router {
     res.json({ channels });
   });
 
+  // ── Contract routes (FOS-05) ──
+
+  router.get('/contracts', (req, res) => {
+    const status = req.query.status as string | undefined;
+    const wave = req.query.wave ? parseInt(String(req.query.wave)) : undefined;
+    const contracts = engine.contracts.listContracts({
+      status: status as any,
+      wave,
+    });
+    res.json(contracts.map((c) => ({
+      id: c.id,
+      name: c.name,
+      status: c.status,
+      wave: c.wave,
+      claimedBy: c.claimedBy,
+      qcBy: c.qcBy,
+      validatedBy: c.validatedBy,
+      dependencies: c.dependencies,
+      blocks: c.blocks,
+      artifacts: c.artifacts,
+    })));
+  });
+
+  router.get('/contracts/ready', (_req, res) => {
+    res.json(engine.contracts.getReady().map((c) => ({ id: c.id, name: c.name, wave: c.wave })));
+  });
+
+  router.get('/contracts/blocked', (_req, res) => {
+    res.json(engine.contracts.getBlocked().map((c) => ({
+      id: c.id,
+      name: c.name,
+      dependencies: c.dependencies,
+    })));
+  });
+
+  router.get('/contracts/:id', (req, res) => {
+    const contract = engine.contracts.getContract(req.params.id);
+    if (!contract) {
+      res.status(404).json({ error: `Contract not found: ${req.params.id}` });
+      return;
+    }
+    res.json(contract);
+  });
+
+  router.get('/contracts/:id/audit', (req, res) => {
+    try {
+      const trail = engine.contracts.getAuditTrail(req.params.id);
+      res.json(trail);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(404).json({ error: msg });
+    }
+  });
+
+  router.post('/contracts/:id/claim', (req, res) => {
+    const { modelId } = req.body;
+    if (!modelId) {
+      res.status(400).json({ error: 'modelId is required' });
+      return;
+    }
+    const result = engine.claimContract(req.params.id, modelId);
+    res.status(result.success ? 200 : 409).json(result);
+  });
+
+  router.post('/contracts/:id/start', (req, res) => {
+    const { modelId } = req.body;
+    try {
+      engine.contracts.startWork(req.params.id, modelId);
+      engine.events.emit('contract.started', { contractId: req.params.id, modelId });
+      res.json({ success: true });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(400).json({ error: msg });
+    }
+  });
+
+  router.post('/contracts/:id/built', (req, res) => {
+    const { modelId, artifacts = [] } = req.body;
+    try {
+      engine.contracts.reportBuilt(req.params.id, modelId, artifacts);
+      engine.events.emit('contract.built', { contractId: req.params.id, modelId, artifacts });
+      res.json({ success: true });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(400).json({ error: msg });
+    }
+  });
+
+  router.post('/contracts/:id/qc', (req, res) => {
+    const { pass, findings = [], failures = [], model, evidence = [] } = req.body;
+    try {
+      engine.contracts.reportQC(req.params.id, { pass, findings, failures, model, evidence });
+      engine.events.emit('contract.qc', { contractId: req.params.id, pass, model });
+      res.json({ success: true });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(400).json({ error: msg });
+    }
+  });
+
+  router.post('/contracts/:id/validate', (req, res) => {
+    const { pass, evidence = [], model, notes } = req.body;
+    try {
+      engine.contracts.reportValidation(req.params.id, { pass, evidence, model, notes });
+      engine.events.emit('contract.validated', { contractId: req.params.id, pass, model });
+      res.json({ success: true });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(400).json({ error: msg });
+    }
+  });
+
+  router.post('/contracts/:id/assign-qc', (req, res) => {
+    const { availableModels } = req.body;
+    try {
+      const assignment = engine.contracts.assignQCModel(req.params.id, availableModels || []);
+      if (!assignment) {
+        res.status(409).json({ error: 'No eligible QC model available' });
+        return;
+      }
+      engine.events.emit('contract.qc_assigned', { contractId: req.params.id, assignedTo: assignment.assignedTo });
+      res.json(assignment);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(400).json({ error: msg });
+    }
+  });
+
+  router.post('/contracts/:id/assign-validator', (req, res) => {
+    const { availableModels } = req.body;
+    try {
+      const validator = engine.contracts.assignValidatorModel(req.params.id, availableModels || []);
+      if (!validator) {
+        res.status(409).json({ error: 'No eligible validator available' });
+        return;
+      }
+      engine.events.emit('contract.validator_assigned', { contractId: req.params.id, assignedTo: validator });
+      res.json({ contractId: req.params.id, assignedTo: validator });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(400).json({ error: msg });
+    }
+  });
+
+  // ── Kill Switch ──
+
   router.post('/kill-switch', (_req, res) => {
     engine.stateStore.setHalt(true);
     engine.events.emit('engine.halted', {});

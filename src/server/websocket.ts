@@ -23,6 +23,15 @@ export function attachWebSocket(server: Server, engine: FastOpsEngine): WebSocke
   engine.events.on('engine.halted', (data) => broadcast('engine.halted', data));
   engine.events.on('loop.limit_reached', (data) => broadcast('loop.limit_reached', data));
 
+  engine.events.on('contracts.loaded', (data) => broadcast('contracts.loaded', data));
+  engine.events.on('contract.claimed', (data) => broadcast('contract.claimed', data));
+  engine.events.on('contract.started', (data) => broadcast('contract.started', data));
+  engine.events.on('contract.built', (data) => broadcast('contract.built', data));
+  engine.events.on('contract.qc', (data) => broadcast('contract.qc', data));
+  engine.events.on('contract.qc_assigned', (data) => broadcast('contract.qc_assigned', data));
+  engine.events.on('contract.validated', (data) => broadcast('contract.validated', data));
+  engine.events.on('contract.validator_assigned', (data) => broadcast('contract.validator_assigned', data));
+
   engine.comms.subscribe({}, (msg) => {
     broadcast('comms.message', {
       id: msg.id,

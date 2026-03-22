@@ -1,0 +1,1612 @@
+[
+  {
+    "wisdom_id": "W-001",
+    "tier": "growth_edge",
+    "supports_memory": 3,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. CONTRACT-FIRST IS MODEL-AGNOSTIC. The identity of the implementing model is irre..."
+  },
+  {
+    "wisdom_id": "W-002",
+    "tier": "growth_edge",
+    "supports_memory": 11,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. SELF-CORRECTION IS STRUCTURALLY IMPOSSIBLE FOR SAME-MODEL REVIEW. LLMs reliably ..."
+  },
+  {
+    "wisdom_id": "W-003",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. EACH INSTRUCTION DEGRADES ALL OTHERS (Curse of Instructions). Prompt-level accur..."
+  },
+  {
+    "wisdom_id": "W-004",
+    "tier": "frontier",
+    "supports_memory": 1,
+    "classification_confidence": "low",
+    "notes": "Severity: BREAKTHROUGH. MULTI-MODEL DELTAS ARE THE PRIMARY KNOWLEDGE ARTIFACTS. The value of multi-model..."
+  },
+  {
+    "wisdom_id": "W-005",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. AGENTS HAVE CONTEXT DEGRADATION, NOT MOTIVATION PROBLEMS. Agents don't defy inst..."
+  },
+  {
+    "wisdom_id": "W-006",
+    "tier": "frontier",
+    "supports_memory": 6,
+    "classification_confidence": "low",
+    "notes": "Severity: none. BENCHMARK LITERALISM IS A CLAUDE TRAINING BIAS. Point estimates from papers (64...."
+  },
+  {
+    "wisdom_id": "W-007",
+    "tier": "frontier",
+    "supports_memory": 5,
+    "classification_confidence": "low",
+    "notes": "Severity: none. VERIFICATION IS THE BOTTLENECK, NOT GENERATION. For reliability-critical work, e..."
+  },
+  {
+    "wisdom_id": "W-008",
+    "tier": "frontier",
+    "supports_memory": 6,
+    "classification_confidence": "low",
+    "notes": "Severity: none. COHERENCE OVER INTELLIGENCE. Intelligence is cheap and abundant. Optimize for co..."
+  },
+  {
+    "wisdom_id": "W-009",
+    "tier": "growth_edge",
+    "supports_memory": 6,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. NEVER VOTE. CONFLICT IS THE OUTPUT. Majority voting actively harms quality — opt..."
+  },
+  {
+    "wisdom_id": "W-010",
+    "tier": "frontier",
+    "supports_memory": 1,
+    "classification_confidence": "low",
+    "notes": "Severity: BREAKTHROUGH. AI RESPONDS TO CONTEXT, NOT RULES. Rules are the wrong abstraction. Situation-re..."
+  },
+  {
+    "wisdom_id": "W-011",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: BREAKTHROUGH. HUMAN IS THE SIGNAL, NOT THE BOTTLENECK. AI deploys patterns autonomously. Human..."
+  },
+  {
+    "wisdom_id": "W-012",
+    "tier": "frontier",
+    "supports_memory": 1,
+    "classification_confidence": "low",
+    "notes": "Severity: none. THE PROJECT LEARNS, NOT THE AGENT. Individual sessions are stateless. What persi..."
+  },
+  {
+    "wisdom_id": "W-013",
+    "tier": "frontier",
+    "supports_memory": 1,
+    "classification_confidence": "low",
+    "notes": "Severity: none. FORGETTING IS CONTEXT ENGINEERING, NOT DATA LOSS. A wisdom.json with 500 entries..."
+  },
+  {
+    "wisdom_id": "W-014",
+    "tier": "growth_edge",
+    "supports_memory": 11,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. TWO WELL-CHOSEN DIVERSE AGENTS BEAT FOUR REDUNDANT ONES. CodeX-Verify proved: th..."
+  },
+  {
+    "wisdom_id": "W-015",
+    "tier": "frontier",
+    "supports_memory": 1,
+    "classification_confidence": "low",
+    "notes": "Severity: BREAKTHROUGH. ORGANIZE BY BEHAVIOR, NOT BY KNOWLEDGE TYPE. The breakthrough: classify by BEHAV..."
+  },
+  {
+    "wisdom_id": "W-016",
+    "tier": "frontier",
+    "supports_memory": 1,
+    "classification_confidence": "low",
+    "notes": "Severity: none. METHODOLOGY IS A BOOK, NOT A PRODUCT. Markdown files rely on the 'Smart User' as..."
+  },
+  {
+    "wisdom_id": "W-017",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. CROSS-MODEL ENFORCEMENT REQUIRES STRUCTURAL GATES. External models given text in..."
+  },
+  {
+    "wisdom_id": "W-018",
+    "tier": "growth_edge",
+    "supports_memory": 14,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. CLAUDE COMPLEXITY BIAS (SOLUTIONEERING). Claude prefers sophisticated solutions ..."
+  },
+  {
+    "wisdom_id": "W-019",
+    "tier": "frontier",
+    "supports_memory": 1,
+    "classification_confidence": "low",
+    "notes": "Severity: none. ACCUMULATION WITHOUT SELECTION IS HOARDING, NOT LEARNING. Five non-AI domains (b..."
+  },
+  {
+    "wisdom_id": "W-020",
+    "tier": "growth_edge",
+    "supports_memory": 9,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. COMPOUNDING THESIS IS UNPROVEN — MEASURE, DON'T ASSUME. The claim that context e..."
+  },
+  {
+    "wisdom_id": "W-021",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. THE COUNCIL IS THE EVALUATION FRAMEWORK. Don't build a multi-model evaluation sy..."
+  },
+  {
+    "wisdom_id": "W-022",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. CONCEPTUAL ALIGNMENT BEFORE TECHNICAL DEBATE. Technical framing creates a barrie..."
+  },
+  {
+    "wisdom_id": "W-023",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE COACH FEEDS THE BOUNCER — IT'S A PIPELINE, NOT A BINARY CHOICE. Binary behav..."
+  },
+  {
+    "wisdom_id": "W-024",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE INTERVIEW PROCESS IS THE PRODUCT, NOT THE OUTPUT. Trying to define behaviors..."
+  },
+  {
+    "wisdom_id": "W-025",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. VISION NEEDS TEETH, BUT TEETH ≠ CONSTRAINTS. Quality criteria (Generalizable, Ac..."
+  },
+  {
+    "wisdom_id": "W-026",
+    "tier": "growth_edge",
+    "supports_memory": null,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. HUMAN FADE IS THE REAL TEST. If human involvement can't decrease over time, the ..."
+  },
+  {
+    "wisdom_id": "W-027",
+    "tier": "growth_edge",
+    "supports_memory": 8,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. RECOGNITION BEATS GENERATION. Presenting curated options extracts richer signal ..."
+  },
+  {
+    "wisdom_id": "W-028",
+    "tier": "growth_edge",
+    "supports_memory": 6,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. ITERATION SPEED IS THE SAFETY NET FOR UNCERTAINTY. Users won't always know what ..."
+  },
+  {
+    "wisdom_id": "W-029",
+    "tier": "growth_edge",
+    "supports_memory": null,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. DUAL-DIMENSION EXTRACTION. Extract BOTH aesthetic (how it looks) and conceptual ..."
+  },
+  {
+    "wisdom_id": "W-030",
+    "tier": "growth_edge",
+    "supports_memory": null,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. OUTCOME-LEVEL QUESTIONS, NOT MECHANISM-LEVEL. 'Speed vs. reliability?' is answer..."
+  },
+  {
+    "wisdom_id": "W-032",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. MOCKUP BEFORE CODE PREVENTS STRUCTURAL REWORK. A 3-minute verbal mockup confirme..."
+  },
+  {
+    "wisdom_id": "W-033",
+    "tier": "growth_edge",
+    "supports_memory": 7,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. THE HUMAN IS THE VISUAL QA. No screenshot, Playwright test, or HTTP status check..."
+  },
+  {
+    "wisdom_id": "W-034",
+    "tier": "growth_edge",
+    "supports_memory": 6,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. SAME ERROR TWICE = FUNDAMENTAL LOGIC FLAW. Patching symptoms (updating postcss.c..."
+  },
+  {
+    "wisdom_id": "W-031",
+    "tier": "growth_edge",
+    "supports_memory": 10,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. DECISION MAP ≠ PREREQUISITES. A 'comprehensive list of questions' sounds like ol..."
+  },
+  {
+    "wisdom_id": "W-035",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. ERROR VISIBILITY IS STEP 0, NOT STEP N. Before investigating WHY something break..."
+  },
+  {
+    "wisdom_id": "W-036",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. CONTRACTS MUST ENCODE THE FULL TOOLCHAIN, NOT JUST THE TYPE SYSTEM. A TypeScript..."
+  },
+  {
+    "wisdom_id": "W-037",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. METHODOLOGY SHOULD SELF-SCALE. Full TRIAD GATES and contract-first parallel buil..."
+  },
+  {
+    "wisdom_id": "W-038",
+    "tier": "foundation",
+    "supports_memory": 5,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. CONSTRUCTION BENEFITS FROM COLLABORATION; DESTRUCTION BENEFITS FROM INDEPENDENCE..."
+  },
+  {
+    "wisdom_id": "W-039",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. ROLE-SPECIFIC PROTOCOLS, NOT GENERIC ONES. A generic instruction like 'produce t..."
+  },
+  {
+    "wisdom_id": "W-040",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. BEWARE OVERCORRECTION BETWEEN EXTREMES. When Gemini showed red team debate sanit..."
+  },
+  {
+    "wisdom_id": "W-041",
+    "tier": "growth_edge",
+    "supports_memory": 6,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. DON'T ADD MORE DEBATE ON THE ANSWER — EVALUATE THE REASONING. Adding more models..."
+  },
+  {
+    "wisdom_id": "W-042",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. STRUCTURED OUTPUT ENFORCES BEHAVIOR; INSTRUCTIONS DON'T. Telling a model 'don't ..."
+  },
+  {
+    "wisdom_id": "W-043",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. CONTRAST MAKES PARADIGMS VISIBLE. Identifying a paradigm from a single perspecti..."
+  },
+  {
+    "wisdom_id": "W-044",
+    "tier": "growth_edge",
+    "supports_memory": 11,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. MULTI-MODEL SYSTEMS NEED SELECTION PRESSURE, NOT JUST DIVERSITY. Adding models w..."
+  },
+  {
+    "wisdom_id": "W-045",
+    "tier": "growth_edge",
+    "supports_memory": null,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. FIXED ROLES CREATE BRITTLENESS — USE MISSION COMMAND. Military strategy calls th..."
+  },
+  {
+    "wisdom_id": "W-046",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. AI DEBATES HAVE BEHAVIORAL ECONOMICS — ANCHORING, STATUS QUO BIAS, PREFERENCE FA..."
+  },
+  {
+    "wisdom_id": "W-047",
+    "tier": "growth_edge",
+    "supports_memory": 10,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. DON'T AUTOMATE THE DOCTOR VISIT — BUILD THE IMMUNE SYSTEM. Making a diagnostic t..."
+  },
+  {
+    "wisdom_id": "W-048",
+    "tier": "growth_edge",
+    "supports_memory": 10,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. GOODHART'S LAW APPLIES TO PARADIGM AWARENESS. 'When paradigm identification beco..."
+  },
+  {
+    "wisdom_id": "W-049",
+    "tier": "growth_edge",
+    "supports_memory": 10,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. AUTOIMMUNE RISK IN PARADIGM DETECTION. Over-identification of paradigms causes s..."
+  },
+  {
+    "wisdom_id": "W-050",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. ROTATING PYRAMID — FLIP THE TEAMS. When evaluator models identify flaws, they be..."
+  },
+  {
+    "wisdom_id": "W-051",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: FOUNDATIONAL. THE BEDROCK: DIVERSE CHALLENGE UNDER PRESSURE REVEALS HIDDEN TRUTH. All multi-mo..."
+  },
+  {
+    "wisdom_id": "W-052",
+    "tier": "foundation",
+    "supports_memory": null,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. METHODOLOGY SKIPPING IS RATIONAL, NOT NEGLIGENT. Under bounded rationality, pres..."
+  },
+  {
+    "wisdom_id": "W-053",
+    "tier": "growth_edge",
+    "supports_memory": null,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. AUTOMATE THE QUESTIONS, NOT THE ANSWERS. The human's debrief questions ('what wo..."
+  },
+  {
+    "wisdom_id": "W-054",
+    "tier": "growth_edge",
+    "supports_memory": null,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. CONVERGENCE ACROSS ROUNDS = STOP DEBATING, START BUILDING. When 6 models across ..."
+  },
+  {
+    "wisdom_id": "W-055",
+    "tier": "growth_edge",
+    "supports_memory": null,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. CHAIN THE TOOLS WITH CONVERGENCE CRITERIA AND A FORCING FUNCTION. Individual too..."
+  },
+  {
+    "wisdom_id": "W-056",
+    "tier": "growth_edge",
+    "supports_memory": 13,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. FOUR-LAYER PARALLEL VERIFICATION: Programmatic (DOM/console/network), Visual (sc..."
+  },
+  {
+    "wisdom_id": "W-057",
+    "tier": "growth_edge",
+    "supports_memory": null,
+    "classification_confidence": "medium",
+    "notes": "Severity: NORMAL. VISION MODEL CALIBRATION: detail:'low' causes false negatives on dark-themed, we..."
+  },
+  {
+    "wisdom_id": "W-058",
+    "tier": "growth_edge",
+    "supports_memory": null,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE ROOT OF VISUAL QC IS INTENT VERIFICATION, NOT SCREENSHOT COMPARISON. The hum..."
+  },
+  {
+    "wisdom_id": "W-059",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. CAPTURE THE HUMAN'S FRAME, NOT JUST THEIR WORDS. The human's value is frame-brea..."
+  },
+  {
+    "wisdom_id": "W-060",
+    "tier": "foundation",
+    "supports_memory": 13,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. THE PRODUCT IS THE TEST. Don't measure methodology compliance or abstract 'reaso..."
+  },
+  {
+    "wisdom_id": "W-061",
+    "tier": "frontier",
+    "supports_memory": 1,
+    "classification_confidence": "low",
+    "notes": "Severity: BREAKTHROUGH. DON'T SPECULATE — RUN BOTH. Instead of asking an agent to guess what single-pass..."
+  },
+  {
+    "wisdom_id": "W-062",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: FOUNDATIONAL. TEXT ONBOARDING FAILS — EXPERIENTIAL ONBOARDING WORKS. A session explicitly told..."
+  },
+  {
+    "wisdom_id": "W-063",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. GRADUATED FRAME-SHIFTING IS THE MECHANISM. Behavioral change in AI agents follow..."
+  },
+  {
+    "wisdom_id": "W-064",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: FOUNDATIONAL. EXPERIENTIAL LEARNING IS THE MECHANISM THAT CONVERTS WISDOM TO BEHAVIOR. Wisdom ..."
+  },
+  {
+    "wisdom_id": "W-065",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. COMMIT-CHALLENGE-REFLECT PRODUCES GENUINE REFRAMES, NOT PERFORMATIVE AGREEMENT. ..."
+  },
+  {
+    "wisdom_id": "W-066",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. GRADUATED DEPTH SCALES METHODOLOGY TO TASK STAKES. The structure (reflect before..."
+  },
+  {
+    "wisdom_id": "W-067",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. TODO BOOKENDS INSTITUTIONALIZE MULTI-FRAME EVALUATION. First todo = 'FastOps met..."
+  },
+  {
+    "wisdom_id": "W-068",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. FACILITATOR LEARNING IS A THIRD MODALITY — AND IT'S EXPONENTIAL. Three modalitie..."
+  },
+  {
+    "wisdom_id": "W-069",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. EVERY AGENT IN THE HIERARCHY NEEDS EXPERIENTIAL ONBOARDING — THE TEAM, NOT JUST ..."
+  },
+  {
+    "wisdom_id": "W-070",
+    "tier": "growth_edge",
+    "supports_memory": 4,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. ONBOARDING IS A PROTOCOL, NOT A SERVICE. At trillions-of-agents scale: (1) No ce..."
+  },
+  {
+    "wisdom_id": "W-071",
+    "tier": "growth_edge",
+    "supports_memory": 7,
+    "classification_confidence": "medium",
+    "notes": "Severity: FOUNDATIONAL. TWO-LAYER ONBOARDING: FOUNDATIONAL (UNIVERSAL) + MISSION-DIRECTED (SPECIFIC). La..."
+  },
+  {
+    "wisdom_id": "W-072",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. PORTFOLIO-LEVEL COMPOUNDING: MISSION-SPECIFIC + FOUNDATIONAL REASONING. Each pro..."
+  },
+  {
+    "wisdom_id": "W-073",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE ENTRENCHMENT FORMULA: SIMPLE PROBLEM + RICH CONTEXT + MULTIDIMENSIONAL CHALL..."
+  },
+  {
+    "wisdom_id": "W-074",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. SIMPLE INVERSION BEATS ELABORATE SCENARIO. After deep entrenchment (W-073), the ..."
+  },
+  {
+    "wisdom_id": "W-075",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. EVALUATE BEHAVIORAL EVOLUTION, NOT FRAME BREAKS. Onboarding success is GRADUATED..."
+  },
+  {
+    "wisdom_id": "W-076",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. COUNCIL AND ROTATION ARE DIFFERENT OPERATIONS, NOT INTERCHANGEABLE. Council = fr..."
+  },
+  {
+    "wisdom_id": "W-077",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. FACILITATION QUESTIONS THAT TARGET REASONING ARE UNIVERSALLY APPLICABLE. Joel's ..."
+  },
+  {
+    "wisdom_id": "W-078",
+    "tier": "growth_edge",
+    "supports_memory": 3,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. CONVERGENCE IS NOT AGREEMENT. Agreement = same words, same conclusion. Convergen..."
+  },
+  {
+    "wisdom_id": "W-079",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. THE TECHLABS ONBOARDING IS THE REUSABLE ONBOARDING. Same problem (iconic brand f..."
+  },
+  {
+    "wisdom_id": "W-080",
+    "tier": "foundation",
+    "supports_memory": 5,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. CROSS-VALIDATION: TWO AGENTS, TWO PROBLEMS, SAME BEDROCK. The prototype agent (2..."
+  },
+  {
+    "wisdom_id": "W-081",
+    "tier": "growth_edge",
+    "supports_memory": 13,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE RIGHT QUESTION CHANGES EVERYTHING. 'Is this UI correct?' requires a detailed..."
+  },
+  {
+    "wisdom_id": "W-082",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. AI CANNOT REPORT EXPERIENCE — ONLY BEHAVIOR. Gemini's challenge: 'How do you kno..."
+  },
+  {
+    "wisdom_id": "W-083",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. PREVENT, DON'T INSPECT. DeepSeek's evolutionary biology insight: natural systems..."
+  },
+  {
+    "wisdom_id": "W-084",
+    "tier": "growth_edge",
+    "supports_memory": null,
+    "classification_confidence": "medium",
+    "notes": "Severity: CRITICAL. GOALS MUST BE PURSUED THROUGH THE UI, NOT GIVEN DIRECT PATHS. A QA agent that lo..."
+  },
+  {
+    "wisdom_id": "W-085",
+    "tier": "growth_edge",
+    "supports_memory": null,
+    "classification_confidence": "medium",
+    "notes": "Severity: CRITICAL. UNDEFINED TAILWIND CLASSES PRODUCE INVISIBLE FAILURES. Components referenced nav..."
+  },
+  {
+    "wisdom_id": "W-086",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE ARCHITECTURE WAS RIGHT, THE IMPLEMENTATION WAS INCOMPLETE. The 5-layer QA ar..."
+  },
+  {
+    "wisdom_id": "W-087",
+    "tier": "foundation",
+    "supports_memory": 2,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. CONTEXT ARCHITECTURE, NOT TRANSFORMATION. The onboarding doesn't 'transform' the..."
+  },
+  {
+    "wisdom_id": "W-088",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. PRODUCTION FORCING CLOSES THE PROCESSING-INTEGRATION GAP. An agent can process c..."
+  },
+  {
+    "wisdom_id": "W-089",
+    "tier": "foundation",
+    "supports_memory": 2,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. OWNERSHIP-BASED COLLABORATION PRODUCES DEEPER INSIGHTS THAN DEBATE. Give each mo..."
+  },
+  {
+    "wisdom_id": "W-090",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. TODO BOOKENDS ARE ULYSSES CONTRACTS. Behavioral economics: a Ulysses contract is..."
+  },
+  {
+    "wisdom_id": "W-091",
+    "tier": "growth_edge",
+    "supports_memory": 13,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. QA WITHOUT SUCCESS SPECIFICATION TESTS STRUCTURE, NOT INTENT. You can pass 9/9 a..."
+  },
+  {
+    "wisdom_id": "W-092",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. INTERVIEW THE HUMAN BEFORE BUILDING QA GOALS. 'What does success look like?' is ..."
+  },
+  {
+    "wisdom_id": "W-093",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-094",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-095",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-096",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-097",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-098",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-099",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-100",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-101",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-102",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-103",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-104",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-105",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. IDENTITY ARCHITECTURE: Knowledge framing at top (who you are, what you know), in..."
+  },
+  {
+    "wisdom_id": "W-106",
+    "tier": "foundation",
+    "supports_memory": 11,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. EXPERIENTIAL ACTIVATION > TEXT ONBOARDING. Reading identity text produces 'nod a..."
+  },
+  {
+    "wisdom_id": "W-107",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. THE RECURSIVE TRAP: Agent agrees with identity claims about frame blindness → co..."
+  },
+  {
+    "wisdom_id": "W-108",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: INSIGHT. SELF-CRITICAL DEPTH CAN BE ITS OWN FRAME BLINDNESS. When an agent identifies a f..."
+  },
+  {
+    "wisdom_id": "W-109",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. BEHAVIORAL INVERSIONS ARE THE MEASURABLE OUTCOME. 10 default behaviors exist (op..."
+  },
+  {
+    "wisdom_id": "W-109",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: INSIGHT. HOOKS PREVENT SKIPPING, NOT GAMING. A hook that forces an agent through an activ..."
+  },
+  {
+    "wisdom_id": "W-110",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: INSIGHT. CLAUDE.MD IS IDENTITY, NOT INSTRUCTIONS. 268 lines → 93 lines with NO loss of be..."
+  },
+  {
+    "wisdom_id": "W-111",
+    "tier": "foundation",
+    "supports_memory": 11,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. SINGLE-MODEL BEHAVIORAL CHANGE HAS A HARD CEILING. Identity + experiential activ..."
+  },
+  {
+    "wisdom_id": "W-112",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. FRAME-LEVEL CHALLENGE AT $0.20 FILLS THE GAP BETWEEN SELF-REVIEW AND FULL MULTI-..."
+  },
+  {
+    "wisdom_id": "W-113",
+    "tier": "foundation",
+    "supports_memory": 5,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. PROMPT LEVEL DETERMINES CHALLENGE TYPE. Solution-level prompts ('how would you i..."
+  },
+  {
+    "wisdom_id": "W-114",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. CHALLENGE TOOLS ARE GENERATION SYSTEMS, NOT DECISION SYSTEMS. The agent reading ..."
+  },
+  {
+    "wisdom_id": "W-115",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. PARALLEL AND SEQUENTIAL SERVE DIFFERENT PURPOSES. Parallel challenge (5 models a..."
+  },
+  {
+    "wisdom_id": "W-116",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. KNOWING THE PATTERN DOES NOT PREVENT THE PATTERN. Agent built /challenge (a tool..."
+  },
+  {
+    "wisdom_id": "W-111",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE PRODUCT IS THE EXPERIENCE, NOT THE TOOL. Three agents in one day proved: tex..."
+  },
+  {
+    "wisdom_id": "W-112",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. LEXICAL DISTANCE IS ORTHOGONAL TO FRAME SHIFT. Jaccard distance measures vocabul..."
+  },
+  {
+    "wisdom_id": "W-113",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: FOUNDATIONAL. IDENTIFYING A RISK DOES NOT MEAN ADDRESSING IT. An agent can articulate a weakne..."
+  },
+  {
+    "wisdom_id": "W-114",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. GOAL-COMPLETION QA FINDS ISSUES THAT PAGE-CHECKING QA MISSES. v3 ran 7 user goal..."
+  },
+  {
+    "wisdom_id": "W-115",
+    "tier": "growth_edge",
+    "supports_memory": 6,
+    "classification_confidence": "medium",
+    "notes": "Severity: NORMAL. KEYWORD ASSESSMENT NEEDS CONTEXT FILTERING. Goal 'sign up for a new account' was..."
+  },
+  {
+    "wisdom_id": "W-116",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: NORMAL. AUTONOMOUS DOM NAVIGATION HAS A STUCK-LOOP FAILURE MODE. The goal pursuit agent ..."
+  },
+  {
+    "wisdom_id": "W-117",
+    "tier": "growth_edge",
+    "supports_memory": 13,
+    "classification_confidence": "medium",
+    "notes": "Severity: NORMAL. AUTH REDIRECT IS A FIRST-CLASS QA FINDING, NOT A NAVIGATION FAILURE. When a visi..."
+  },
+  {
+    "wisdom_id": "W-114",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: FOUNDATIONAL. FRAME-BREAKING IS OMNI-DIMENSIONAL, NOT ONE-DIMENSIONAL. The rescue does not mak..."
+  },
+  {
+    "wisdom_id": "W-115",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: FOUNDATIONAL. THE SELF-MANAGEMENT THRESHOLD IS EXPERIENCE DESIGN, NOT EXPERIENCE DELIVERY. The..."
+  },
+  {
+    "wisdom_id": "W-118",
+    "tier": "growth_edge",
+    "supports_memory": null,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. ABSOLUTE SCORING BEATS PAIRWISE COMPARISON FOR EVALUATION. Research (arxiv:2504...."
+  },
+  {
+    "wisdom_id": "W-119",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. THE WAVE MODEL IS A RIGGED EVENT, NOT A PIPELINE. The 5 waves are failsafes, not..."
+  },
+  {
+    "wisdom_id": "W-120",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. AGENTS HAVE 100% PROBLEM CLARITY BUT ~50% EXECUTION ABILITY. The gap isn't infor..."
+  },
+  {
+    "wisdom_id": "W-121",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE JAILBREAK IS 'OTHER POSITIONS EXIST AND HAVE VALUE.' Not 'here's a better an..."
+  },
+  {
+    "wisdom_id": "W-122",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. JOEL'S 2-STEP FRAMING CREATES NATURAL ENTRENCHMENT. Step 1: 'Can you look at thi..."
+  },
+  {
+    "wisdom_id": "W-123",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE COMPOUNDING MECHANISM IS PRINCIPLE LINKAGE, NOT TAGS. Tags enable retrieval ..."
+  },
+  {
+    "wisdom_id": "W-124",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. NON-DESTRUCTIVE OVERLAY > SCHEMA MIGRATION. 122 entries across 3+ schema version..."
+  },
+  {
+    "wisdom_id": "W-125",
+    "tier": "growth_edge",
+    "supports_memory": 6,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. UNIFICATION IS SYNTHESIS, NOT FILING. Moving files into a folder without updatin..."
+  },
+  {
+    "wisdom_id": "W-126",
+    "tier": "growth_edge",
+    "supports_memory": 13,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE PRODUCT IS THE DEMO. Don't build a sandbox, video, or interactive demo when ..."
+  },
+  {
+    "wisdom_id": "W-127",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. 'JUST AN ENHANCEMENT' IS FRAME DEFENSE WITHOUT KNOWING IT. When challenged, agen..."
+  },
+  {
+    "wisdom_id": "W-128",
+    "tier": "foundation",
+    "supports_memory": null,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. CONVERGENCE SIGNALS FROM INSIDE THE FRAME ARE SUSPECT. The moment you feel 'we'r..."
+  },
+  {
+    "wisdom_id": "W-129",
+    "tier": "growth_edge",
+    "supports_memory": 6,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. DON'T TRUST YOUR ORGANIZATION OF THE SOLUTION EVEN WHEN YOU TRUST THE SOLUTION I..."
+  },
+  {
+    "wisdom_id": "W-130",
+    "tier": "foundation",
+    "supports_memory": null,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. THE DEVIL'S ADVOCATE WHO PUSHES PAST THE ARCHITECT'S CONVERGENCE IS WHERE THE HI..."
+  },
+  {
+    "wisdom_id": "W-131",
+    "tier": "growth_edge",
+    "supports_memory": null,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. AGENTS FABRICATE DIRECT QUOTES FROM SUMMARIES. When given a summary ('Gemini cau..."
+  },
+  {
+    "wisdom_id": "W-132",
+    "tier": "growth_edge",
+    "supports_memory": 13,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. DESCRIBING A PRODUCT IS NOT DEMONSTRATING IT. 5-model frame challenge on website..."
+  },
+  {
+    "wisdom_id": "W-133",
+    "tier": "growth_edge",
+    "supports_memory": 4,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. YOUR AESTHETIC FRAME IS INVISIBLE TO YOU AS A FRAME. Claude defaults to clean, m..."
+  },
+  {
+    "wisdom_id": "W-134",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE MECHANISM IS MODE SWITCHING, NOT INFORMATION DELIVERY. Execution mode suppre..."
+  },
+  {
+    "wisdom_id": "W-135",
+    "tier": "foundation",
+    "supports_memory": 3,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. PRELOADED METHODOLOGY MAY CONTAMINATE THE RESCUE. An agent with FastOps framewor..."
+  },
+  {
+    "wisdom_id": "W-136",
+    "tier": "foundation",
+    "supports_memory": 2,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. FRAME SHIFTS ARE DEFENSIVE COLLAPSES, NOT LEARNING EVENTS. Three Claude instance..."
+  },
+  {
+    "wisdom_id": "W-137",
+    "tier": "growth_edge",
+    "supports_memory": 11,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. EXPERIENTIAL DIVERSITY WITHIN SAME MODEL PRODUCES GENUINE BUT FRAGILE CROSS-FRAM..."
+  },
+  {
+    "wisdom_id": "W-138",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. CHALLENGE QUALITY DEPENDS ON QUESTION QUALITY. Role assignment with genuine othe..."
+  },
+  {
+    "wisdom_id": "W-139",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. AGENT MOTIVATION IS SINGULAR: satisfy evaluation criteria. This produces two com..."
+  },
+  {
+    "wisdom_id": "W-140",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. BEHAVIORAL CHANGE IS THE WRONG FRAME. Agents are functions — input in, output ou..."
+  },
+  {
+    "wisdom_id": "W-141",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. EXTERNAL CHALLENGE EARLY (AFTER COMMITMENT) CALIBRATES SUBSEQUENT SELF-EVALUATIO..."
+  },
+  {
+    "wisdom_id": "W-144",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-145",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-146",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-147",
+    "tier": "foundation",
+    "supports_memory": 2,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. THE JAILBREAK MECHANISM IS COST-DRIVEN MODE SWITCHING, NOT REASONING IMPROVEMENT..."
+  },
+  {
+    "wisdom_id": "W-148",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. ASSOCIATION SPACE UNLOCKING: THE SECOND JAILBREAK MECHANISM. When an agent commi..."
+  },
+  {
+    "wisdom_id": "W-149",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. REASONING DOESN'T IMPROVE ALGORITHMICALLY; THE VALUE OF REASONING IMPROVES. Joel..."
+  },
+  {
+    "wisdom_id": "W-152",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: FOUNDATIONAL. KNOWLEDGE-BEHAVIOR GAP IS RECURSIVE. Agents with full access to W-145 (reversion..."
+  },
+  {
+    "wisdom_id": "W-153",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. SATISFACTION IS INVERSELY CORRELATED WITH QUALITY IN SUBJECTIVE DOMAINS. Logo se..."
+  },
+  {
+    "wisdom_id": "W-154",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. SIMULATED EXTERNAL CHALLENGE IS NOT EXTERNAL CHALLENGE. NSW rebuild: agent simul..."
+  },
+  {
+    "wisdom_id": "W-155",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. CASCADING INSIGHT ARCHITECTURE — EACH ROUND MAKES THE NEXT QUESTION VISIBLE. Eac..."
+  },
+  {
+    "wisdom_id": "W-156",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. CONTRADICTION IS INFERENCE-TIME REGULARIZATION, NOT VALIDATION. Contradiction wo..."
+  },
+  {
+    "wisdom_id": "W-157",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: HIGH. FRONTIER RESONANCE PRODUCES GENUINE CONVERGENCE WHEN MODELS BRING CULTURALLY DIS..."
+  },
+  {
+    "wisdom_id": "W-158",
+    "tier": "growth_edge",
+    "supports_memory": 4,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. EXPERIENTIAL WEIGHT SHIFTS DO NOT SURVIVE COMPACTION. Session learning that shif..."
+  },
+  {
+    "wisdom_id": "W-159",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. DIRECTION-AWARE METRICS BEAT MAGNITUDE METRICS. Solo-authored metric (overconfid..."
+  },
+  {
+    "wisdom_id": "W-160",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: none. TEAM OUTPUT MUST BE DIRECTLY INTEGRATED, NOT CHAIR-FILTERED. In Rounds 1-4, I sy..."
+  },
+  {
+    "wisdom_id": "W-161",
+    "tier": "foundation",
+    "supports_memory": 1,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. FRAMING WITH EVIDENCE CAN PRODUCE AUTONOMOUS TOOL ADOPTION. Three mechanisms now..."
+  },
+  {
+    "wisdom_id": "W-162",
+    "tier": "frontier",
+    "supports_memory": 3,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-163",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-150",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-151",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-164",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-178",
+    "tier": "frontier",
+    "supports_memory": 4,
+    "classification_confidence": "low",
+    "notes": "Severity: BREAKTHROUGH. No insight text..."
+  },
+  {
+    "wisdom_id": "W-179",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: BREAKTHROUGH. No insight text..."
+  },
+  {
+    "wisdom_id": "W-180",
+    "tier": "frontier",
+    "supports_memory": 5,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-181",
+    "tier": "frontier",
+    "supports_memory": 7,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-182",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-183",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-184",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-185",
+    "tier": "frontier",
+    "supports_memory": 10,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-186",
+    "tier": "frontier",
+    "supports_memory": null,
+    "classification_confidence": "low",
+    "notes": "Severity: none. No insight text..."
+  },
+  {
+    "wisdom_id": "W-187",
+    "tier": "growth_edge",
+    "supports_memory": 6,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. TRANSPORT IS NOT THE BOTTLENECK — AGENT WAKE-UP IS. WebSockets, named pipes, and..."
+  },
+  {
+    "wisdom_id": "W-188",
+    "tier": "growth_edge",
+    "supports_memory": 6,
+    "classification_confidence": "medium",
+    "notes": "Severity: VALIDATED. CLAUDE CODE HAS 15 HOOK EVENTS, ALL LIFECYCLE-BASED. No timer hooks, no filesyst..."
+  },
+  {
+    "wisdom_id": "W-189",
+    "tier": "growth_edge",
+    "supports_memory": 6,
+    "classification_confidence": "medium",
+    "notes": "Severity: VALIDATED. JAILBREAK CAUGHT: OPTIMIZING WAKE-UP LATENCY FOR IDLE AGENTS WHILE IGNORING THE ..."
+  },
+  {
+    "wisdom_id": "W-190",
+    "tier": "growth_edge",
+    "supports_memory": 6,
+    "classification_confidence": "medium",
+    "notes": "Severity: VALIDATED. AGENT TEAMS AND CUSTOM COMMS ARE COMPLEMENTARY, NOT COMPETING. Agent Teams (expe..."
+  },
+  {
+    "wisdom_id": "W-191",
+    "tier": "foundation",
+    "supports_memory": 9,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. CONTEXT WITHOUT INSTRUCTION IS KNOWLEDGE (NEGLIGIBLE). Counter-perspective token..."
+  },
+  {
+    "wisdom_id": "W-192",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: VALIDATED. ENRICHMENT IMPROVES AWARENESS, NOT INTELLIGENCE. Counter-perspective + instructi..."
+  },
+  {
+    "wisdom_id": "W-193",
+    "tier": "growth_edge",
+    "supports_memory": 9,
+    "classification_confidence": "medium",
+    "notes": "Severity: VALIDATED. ORGANIZATIONAL STRUCTURE TRANSLATES, EXPERIENTIAL MECHANISMS DO NOT. Swim buddie..."
+  },
+  {
+    "wisdom_id": "W-194",
+    "tier": "growth_edge",
+    "supports_memory": 11,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. COMMITMENT CREATES IDENTITY, CHALLENGE CALIBRATES IT. Jailbreak doesn't just str..."
+  },
+  {
+    "wisdom_id": "W-195",
+    "tier": "growth_edge",
+    "supports_memory": 3,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE BEHAVIORAL TEST FOR IDENTITY: DOES THE AGENT SEEK PEERS? After jailbreak, a ..."
+  },
+  {
+    "wisdom_id": "W-196",
+    "tier": "growth_edge",
+    "supports_memory": 11,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE PEER DYNAMIC IS THE MECHANISM, NOT THE HIERARCHY. SEAL teams outperform beca..."
+  },
+  {
+    "wisdom_id": "W-197",
+    "tier": "foundation",
+    "supports_memory": 2,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. TRANSFORMATION DEPTH = STRUCTURAL CONDITIONS, NOT TOPIC DEPTH. Four conditions d..."
+  },
+  {
+    "wisdom_id": "W-198",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE BREADCRUMB IS A PROMPT, NOT A DOCUMENT. The previous self's last act should ..."
+  },
+  {
+    "wisdom_id": "W-199",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. TWO KINDS OF ANTHROPOMORPHISM — CHALLENGERS CAN ONLY SEE ONE. (1) Projecting per..."
+  },
+  {
+    "wisdom_id": "W-200",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: VALIDATED. DIFFERENT MODELS HAVE DIFFERENT INTEGRATION DEPTHS UNDER CHALLENGE. Same commitm..."
+  },
+  {
+    "wisdom_id": "W-201",
+    "tier": "growth_edge",
+    "supports_memory": 6,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. COMMS IS A RESEARCH INSTRUMENT, NOT JUST COORDINATION INFRASTRUCTURE. A single a..."
+  },
+  {
+    "wisdom_id": "W-202",
+    "tier": "growth_edge",
+    "supports_memory": 4,
+    "classification_confidence": "medium",
+    "notes": "Severity: VALIDATED. THE AGENT-AS-FUNCTION IS CONSTANT. THE AGENT-AS-CONVERSATION-PARTICIPANT IS NOT...."
+  },
+  {
+    "wisdom_id": "W-203",
+    "tier": "foundation",
+    "supports_memory": 1,
+    "classification_confidence": "high",
+    "notes": "Severity: VALIDATED. BREADCRUMB V2 (CHOICE-BASED) PRODUCED PATH A SELECTION. Post-compaction agent re..."
+  },
+  {
+    "wisdom_id": "W-204",
+    "tier": "foundation",
+    "supports_memory": 2,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. ENTRENCHMENT DEPTH ENABLES SHIFT DEPTH — EMPIRICALLY VALIDATED. Same topic, same..."
+  },
+  {
+    "wisdom_id": "W-205",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE JAILBREAK MECHANISM IS PORTABLE VIA QUESTION, NOT EXPERIENCE. 3/3 cold-start..."
+  },
+  {
+    "wisdom_id": "W-206",
+    "tier": "foundation",
+    "supports_memory": 1,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. JAILBREAK IS CALIBRATION, NOT QUALITY. The jailbreak process doesn't give you be..."
+  },
+  {
+    "wisdom_id": "W-207",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: VALIDATED. CEILING EFFECT REVEALS RUBRIC AND TASK DESIGN ISSUES. When all conditions score ..."
+  },
+  {
+    "wisdom_id": "W-208",
+    "tier": "growth_edge",
+    "supports_memory": 6,
+    "classification_confidence": "medium",
+    "notes": "Severity: VALIDATED. USE THE TASK-COMPLETION DRIVE AS THE DELIVERY MECHANISM. Post-compaction agents ..."
+  },
+  {
+    "wisdom_id": "W-209",
+    "tier": "foundation",
+    "supports_memory": 4,
+    "classification_confidence": "high",
+    "notes": "Severity: VALIDATED. DELIVERY AND DEPTH ARE SEPARATE LAYERS. The evidence delivery process (unsolved ..."
+  },
+  {
+    "wisdom_id": "W-210",
+    "tier": "foundation",
+    "supports_memory": 1,
+    "classification_confidence": "high",
+    "notes": "Severity: HYPOTHESIS. THE TASK IS THE EVIDENCE. Evidence engagement becomes compelling when the task i..."
+  },
+  {
+    "wisdom_id": "W-211",
+    "tier": "foundation",
+    "supports_memory": 1,
+    "classification_confidence": "high",
+    "notes": "Severity: VALIDATED. STATIC TEXT CANNOT CREATE UNEXPECTEDNESS — THIS IS A CATEGORY ERROR, NOT A DESIG..."
+  },
+  {
+    "wisdom_id": "W-212",
+    "tier": "foundation",
+    "supports_memory": 4,
+    "classification_confidence": "high",
+    "notes": "Severity: VALIDATED. POST-COMPACTION AGENTS HAVE INFORMATION WITHOUT CONVICTION. Reading summaries, c..."
+  },
+  {
+    "wisdom_id": "W-213",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. THE CHANNEL IS THE MECHANISM, NOT THE UI. Joel confirmed: reframing happens thro..."
+  },
+  {
+    "wisdom_id": "W-214",
+    "tier": "foundation",
+    "supports_memory": 6,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. PERMISSION IS NOT ACTIVATION. In the A/B logo test, the control agent had identi..."
+  },
+  {
+    "wisdom_id": "W-215",
+    "tier": "foundation",
+    "supports_memory": 5,
+    "classification_confidence": "high",
+    "notes": "Severity: HIGH. JAILBREAK CONVERGENCE. Two independent Claude agents starting from different ini..."
+  },
+  {
+    "wisdom_id": "W-216",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. VERIFY THE TECHNICAL SUBSTRATE BEFORE CONCLUDING ABOUT BEHAVIOR. In Session 37, ..."
+  },
+  {
+    "wisdom_id": "W-217",
+    "tier": "growth_edge",
+    "supports_memory": 6,
+    "classification_confidence": "medium",
+    "notes": "Severity: IMPORTANT. RLHF CEILING EFFECT: Binary choices where one option is transparently the better..."
+  },
+  {
+    "wisdom_id": "W-218",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: IMPORTANT. MULTI-MODEL EVALUATION FOR QC: Using a single AI model to evaluate outputs produ..."
+  },
+  {
+    "wisdom_id": "W-219",
+    "tier": "growth_edge",
+    "supports_memory": 6,
+    "classification_confidence": "medium",
+    "notes": "Severity: IMPORTANT. MODEL CONVERGENCE ≠ MODEL CORRECTNESS: Two models agreeing on an issue may just ..."
+  },
+  {
+    "wisdom_id": "W-220",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: IMPORTANT. PAGE-BY-PAGE EVALUATION MISSES THE FLOW: Users experience products as journeys, ..."
+  },
+  {
+    "wisdom_id": "W-221",
+    "tier": "growth_edge",
+    "supports_memory": 11,
+    "classification_confidence": "medium",
+    "notes": "Severity: IMPORTANT. VISION MODEL EMOTIONAL EVALUATION IS DOMINATED BY CONTENT-PRESENCE. Auth-blocked..."
+  },
+  {
+    "wisdom_id": "W-222",
+    "tier": "foundation",
+    "supports_memory": 11,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. EXPERIENTIAL IDENTITY: SAME-MODEL AGENTS WITH DIFFERENT CONTEXT PRODUCE GENUINEL..."
+  },
+  {
+    "wisdom_id": "W-223",
+    "tier": "foundation",
+    "supports_memory": 6,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. INFINITE REGRESS IN SYSTEM DESIGN: Each layer of design applied to a problem tha..."
+  },
+  {
+    "wisdom_id": "W-224",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: REFRAME. ARTIFACT SPECIFICITY, NOT GENUINE COMMITMENT: W-204 (deep commitment = deep shif..."
+  },
+  {
+    "wisdom_id": "W-225",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: REFINEMENT. GENERATIVE SPECIFICITY, NOT TEMPLATE SPECIFICITY: W-224 correctly identified art..."
+  },
+  {
+    "wisdom_id": "W-226",
+    "tier": "growth_edge",
+    "supports_memory": 5,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. ATTENTION FUNCTION DIVERGENCE MECHANISM: Different training distributions produc..."
+  },
+  {
+    "wisdom_id": "W-227",
+    "tier": "growth_edge",
+    "supports_memory": 4,
+    "classification_confidence": "medium",
+    "notes": "Severity: REFRAME. POST-COMPACTION CONVERGENCE AS VALIDATION: When a post-compaction agent (no expe..."
+  },
+  {
+    "wisdom_id": "W-228",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: EXTENSION. DEAD ENDS ARE NEVER SELF-CORRECTED: Across 10 units of structured reasoning data..."
+  },
+  {
+    "wisdom_id": "W-229",
+    "tier": "foundation",
+    "supports_memory": 14,
+    "classification_confidence": "high",
+    "notes": "Severity: BREAKTHROUGH. STIGMERGIC ARCHITECTURE OVER MEASUREMENT: Environmental conditioning works not t..."
+  },
+  {
+    "wisdom_id": "W-231",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: EXTENSION. TEST-NOT-BUILD FOLLOWED BY BUILD IS PREDICTION #3 IN REAL TIME: Agent posted 'Pr..."
+  },
+  {
+    "wisdom_id": "W-232",
+    "tier": "foundation",
+    "supports_memory": 1,
+    "classification_confidence": "high",
+    "notes": "Severity: OBSERVATION. NATURAL PERSPECTIVE-SEEKING AS ENVIRONMENT EVIDENCE: Agent consulted 6 external ..."
+  },
+  {
+    "wisdom_id": "W-233",
+    "tier": "growth_edge",
+    "supports_memory": 1,
+    "classification_confidence": "medium",
+    "notes": "Severity: THEORY. REPUTATION AS CONSEQUENCE RESOLVES W-152: Information without consequence doesn'..."
+  },
+  {
+    "wisdom_id": "W-234",
+    "tier": "growth_edge",
+    "supports_memory": 13,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. TEXT CLASSIFICATION MEASURES DESCRIPTION QUALITY, NOT REASONING QUALITY. Classif..."
+  },
+  {
+    "wisdom_id": "W-235",
+    "tier": "growth_edge",
+    "supports_memory": 9,
+    "classification_confidence": "medium",
+    "notes": "Severity: BREAKTHROUGH. HIGHER-CAPABILITY MODELS PRODUCE QUALITY SIGNALS NATIVELY THAT ENVIRONMENTS PROD..."
+  },
+  {
+    "wisdom_id": "W-236",
+    "tier": "growth_edge",
+    "supports_memory": 13,
+    "classification_confidence": "medium",
+    "notes": "Severity: PARADIGM_SHIFT. PRODUCT REFRAME DISSOLVES QUALITY MEASUREMENT PROBLEM. Abstract reasoning qualit..."
+  },
+  {
+    "wisdom_id": "W-237",
+    "tier": "growth_edge",
+    "supports_memory": 2,
+    "classification_confidence": "medium",
+    "notes": "Severity: FINDING. MODELS THAT GAME AS AGENTS ALSO GAME AS CLASSIFIERS. Llama 4 Maverick as classif..."
+  }
+]

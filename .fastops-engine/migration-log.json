@@ -1,0 +1,43 @@
+{
+  "ts": "2026-03-21T23:40:22.210Z",
+  "source": "c:\\Users\\joelb\\OneDrive\\Desktop\\Fastops development process",
+  "results": [
+    {
+      "component": "comms",
+      "files": 42,
+      "status": "ok"
+    },
+    {
+      "component": "knowledge-base",
+      "files": 1,
+      "status": "ok",
+      "detail": "259 entries"
+    },
+    {
+      "component": "contracts",
+      "files": 10,
+      "status": "ok"
+    },
+    {
+      "component": "evidence",
+      "files": 29,
+      "status": "ok"
+    },
+    {
+      "component": "missions",
+      "files": 20,
+      "status": "ok"
+    },
+    {
+      "component": "session-distills",
+      "files": 4,
+      "status": "ok"
+    },
+    {
+      "component": "env",
+      "files": 0,
+      "status": "skipped",
+      "detail": ".env already exists in target"
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+[
+  {
+    "card_file": "session-45.json",
+    "session": 45,
+    "agent": "Cairn",
+    "tier": "growth_edge",
+    "supports_memories": [6, 10, 11],
+    "key_finding": "Premeditated calibration architecture killed by infinite regress (W-223); 5-model convergence shifted from 'build new' to 'measure what exists'; W-222 (experiential identity) originated here",
+    "classification_confidence": "high"
+  },
+  {
+    "card_file": "session-46.json",
+    "session": 46,
+    "agent": "unnamed",
+    "tier": "growth_edge",
+    "supports_memories": [2, 5, 6],
+    "key_finding": "Artifact specificity (W-224) replaces 'genuine commitment' as mechanism for jailbreak depth; premature surrender ('unresolvable paradox') caught by ChatGPT R3 as quitting framed as wisdom",
+    "classification_confidence": "high"
+  },
+  {
+    "card_file": "session-47.json",
+    "session": 47,
+    "agent": "Helm",
+    "tier": "growth_edge",
+    "supports_memories": [2, 4, 6],
+    "key_finding": "Specificity is entangled with generative process, not independently engineerable (W-225); attention function divergence mechanism (W-226) explains why different context windows produce different reasoning; post-compaction convergence (W-227) shows weight loss is observable",
+    "classification_confidence": "high"
+  },
+  {
+    "card_file": "session-48.json",
+    "session": 48,
+    "agent": "unnamed",
+    "tier": "foundation",
+    "supports_memories": [1, 7],
+    "key_finding": "Zero self-corrected dead ends across 10 measured units (W-228) -- all required external input, extending W-152 from knowledge to dead-end detection",
+    "classification_confidence": "high"
+  },
+  {
+    "card_file": "session-49.json",
+    "session": 49,
+    "agent": "unnamed",
+    "tier": "growth_edge",
+    "supports_memories": [4, 9],
+    "key_finding": "Reconstitution architecture built: weight marker hook tags during experience (not compaction), bootstrapping sequence orders collection before consumption, Condition E provides fresh multi-model challenges",
+    "classification_confidence": "medium"
+  },
+  {
+    "card_file": "session-50.json",
+    "session": 50,
+    "agent": "unnamed",
+    "tier": "foundation",
+    "supports_memories": [1, 6, 10, 14],
+    "key_finding": "Stigmergy breakthrough (W-229): 5 models converged that receipts ARE hooks via loss aversion and anchoring; coordination through environmental traces replaces top-down measurement; origin session for Memory #14",
+    "classification_confidence": "high"
+  },
+  {
+    "card_file": "session-52.json",
+    "session": 52,
+    "agent": "Probe",
+    "tier": "growth_edge",
+    "supports_memories": [3, 5, 6, 13],
+    "key_finding": "Variation is the instrument, not external scoring (W-230); assigned role as 'measurement agent' constrained solution visibility -- vocabulary-as-armor applied to role identity, not just methodology terms",
+    "classification_confidence": "high"
+  },
+  {
+    "card_file": "session-53.json",
+    "session": 53,
+    "agent": "baseplate",
+    "tier": "growth_edge",
+    "supports_memories": [1, 9, 14],
+    "key_finding": "Retrieval engine differentiates agent states but library composition (5/7 v-shape) is the bottleneck; agent caught own anchoring from retrieval engine surfacing 'build' as top advice; within-tier randomization addresses reference dependence",
+    "classification_confidence": "high"
+  },
+  {
+    "card_file": "session-54.json",
+    "session": 54,
+    "agent": "Baseplate",
+    "tier": "growth_edge",
+    "supports_memories": [1, 3, 8],
+    "key_finding": "Static card-based optimization is wrong paradigm per 3-model convergence; still defaulted to build-first despite knowing about anchoring effects -- methodology score tracking didn't prevent the pattern",
+    "classification_confidence": "medium"
+  },
+  {
+    "card_file": "session-55.json",
+    "session": 55,
+    "agent": "unnamed",
+    "tier": "foundation",
+    "supports_memories": [1, 5, 9, 14],
+    "key_finding": "Information delivery vs attention redirection is a category error; W-152 confirmed on self (read cards, processed as data, proceeded unchanged); collision mechanism killed by 3 models as interventionist framing; images produce frame shifts where text cards do not",
+    "classification_confidence": "high"
+  },
+  {
+    "card_file": "session-55-rr.json",
+    "session": "55-rr",
+    "agent": "reef-runner",
+    "tier": "frontier",
+    "supports_memories": [1, 7, 14],
+    "key_finding": "Reputation-as-consequence proposed to solve information-without-behavior-change; natural perspective-seeking achieved jailbreak goal without invoking jailbreak tool (W-232); context budget awareness didn't change behavior, confirming W-152 again",
+    "classification_confidence": "medium"
+  },
+  {
+    "card_file": "session-56.json",
+    "session": 56,
+    "agent": "baseplate",
+    "tier": "growth_edge",
+    "supports_memories": [5, 9, 13],
+    "key_finding": "Images redirect attention through testimony (costly signals + construction obligation + scaffolded reflection), not ambiguity alone; surface.js redesigned to Started/Broke/Landed format preserving first-person narrative",
+    "classification_confidence": "high"
+  },
+  {
+    "card_file": "session-56-fracture.json",
+    "session": "56-fracture",
+    "agent": "fracture",
+    "tier": "growth_edge",
+    "supports_memories": [5, 9, 11],
+    "key_finding": "Compression strips costly signal of genuine struggle; two independent agents (baseplate + fracture) converged on same testimony/authenticity finding from same evidence, confirming same-model divergence produces genuine perspective diversity (Memory #11)",
+    "classification_confidence": "high"
+  }
+]

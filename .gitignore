@@ -7,3 +7,8 @@ dist/
 Thumbs.db
 coverage/
 .turbo/
+.next/
+.fastops-engine/comms/
+.fastops-engine/audit/
+.fastops-engine/session-distills/
+.fastops-engine/knowledge-base.jsonl

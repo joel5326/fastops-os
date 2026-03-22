@@ -1,0 +1,280 @@
+[
+  {
+    "id": "FOS-01-model-adapter-layer",
+    "name": "FOS 01 Model Adapter Layer",
+    "status": "OPEN",
+    "wave": 1,
+    "dependencies": [],
+    "blocks": [
+      "FOS-02",
+      "FOS-03",
+      "FOS-04",
+      "FOS-05",
+      "FOS-06",
+      "FOS-07",
+      "FOS-08"
+    ],
+    "spec": "### What to Build\nA unified model adapter layer that provides a single interface for calling any supported LLM API. Each provider gets an adapter that normalizes request/response format.\n\n### Supported Providers (Initial)\n| Provider | Direct API | Cloud-Hosted (Enterprise) | Models |\n|----------|-----------|--------------------------|--------|\n| Anthropic | Messages API | **AWS Bedrock** / **Google Vertex AI** | Claude Opus, Sonnet, Haiku |\n| OpenAI | Chat Completions | **Azure OpenAI Service** | GPT-4o, o1, o3 |\n| Google | Generative Language API | **Google Vertex AI** | Gemini 2.5 Pro, Flash |\n| Meta | — | **Azure AI** / **AWS Bedrock** | Llama 3.x (open source, fully self-hosted) |\n| Mistral | Mistral API | **Azure AI** | Mistral Large, Medium |\n| Moonshot | Chat API | ❌ None (dev/non-sensitive only) | Kimi / Moonshot |\n| xAI | Chat API | ❌ None (dev/non-sensitive only) | Grok |\n| OpenRouter | Unified API | ❌ None (dev/fallback only) | Any |\n\n### Dual-Mode Architecture: Direct vs Cloud-Hosted\nEvery adapter supports two endpoint modes, selected via configuration:\n\n**Direct Mode** — calls the provider's own API (api.anthropic.com, api.openai.com, etc.)\n- For: development, personal use, non-sensitive tasks\n- Pro: simplest setup, just needs an API key\n- Con: data leaves your infrastructure, each provider has different data policies\n\n**Cloud-Hosted Mode** — calls enterprise cloud endpoints (Azure OpenAI, AWS Bedrock, Vertex AI)\n- For: enterprise clients, sensitive data, compliance-required environments\n- Pro: data never leaves your cloud tenant, zero-training guarantees, single compliance framework\n- Con: requires cloud account setup, slightly higher per-token cost\n\nThe adapter interface is identical in both modes. Code above the adapter layer doesn't know or care which mode is active. Configuration determines routing:\n\n```typescript\n// fastops.config.json\n{\n  \"adapters\": {\n    \"anthropic\": {\n      \"mode\": \"cloud-hosted\",           // \"direct\" | \"cloud-hosted\"\n      \"direct\": {\n        \"apiKey\": \"${ANTHROPIC_API_KEY}\"\n      },\n      \"cloudHosted\": {\n        \"provider\": \"bedrock\",          // \"bedrock\" | \"vertex\"\n        \"region\": \"us-east-1\",\n        \"credentials\": \"aws-profile\"    // AWS profile or GCP service account\n      }\n    },\n    \"openai\": {\n      \"mode\": \"cloud-hosted\",\n      \"direct\": {\n        \"apiKey\": \"${OPENAI_API_KEY}\"\n      },\n      \"cloudHosted\": {\n        \"provider\": \"azure\",\n        \"endpoint\": \"https://your-instance.openai.azure.com\",\n        \"apiVersion\": \"2024-12-01-preview\",\n        \"deploymentMap\": {\n          \"gpt-4o\": \"your-gpt4o-deployment\",\n          \"o3\": \"your-o3-deployment\"\n        }\n      }\n    }\n  }\n}\n```\n\n### Enterprise Security Tier\nWhen all adapters run in cloud-hosted mode within a single cloud tenant:\n\n```\n┌─────────────────────────────────────────────────┐\n│            Azure Private VNet / AWS VPC          │\n│                                                  │\n│  ┌──────────────────┐                            │\n│  │  FastOps Engine   │                            │\n│  │  (VM / Container) │                            │\n│  └──┬───┬───┬───┬──┘                            │\n│     │   │   │   │    Private Endpoints           │\n│     ▼   ▼   ▼   ▼                                │\n│  Azure OpenAI  Bedrock  Vertex AI  Azure AI      │\n│  (GPT)         (Claude) (Gemini)   (Llama,       │\n│                                     Mistral)     │\n│                                                  │\n│  ✅ Data never leaves tenant boundary             │\n│  ✅ Zero-training guarantees (contractual)        │\n│  ✅ Single compliance framework                   │\n│  ✅ Full audit trail                              │\n│  ✅ Data residency control (pick region)          │\n└─────────────────────────────────────────────────┘\n```\n\n**Enterprise-safe model roster** (all available cloud-hosted):\n- Claude (Bedrock / Vertex) — Anthropic architecture\n- GPT-4o, o1, o3 (Azure OpenAI) — OpenAI architecture\n- Gemini (Vertex AI) — Google architecture\n- Llama (Azure AI / Bedrock) — Meta architecture, open source, fully self-hosted\n- Mistral (Azure AI) — Mistral architecture\n\nThat's 5 distinct model architectures with genuinely different training data and reasoning approaches — enough for real multi-model collision. Models without cloud-hosted options (Kimi, Grok, DeepSeek) are available in direct mode for development and non-sensitive work only.\n\n### Interface Contract\n```typescript\ninterface ModelAdapter {\n  // Core call — send messages, get response\n  chat(request: ChatRequest): Promise<ChatResponse>;\n\n  // Streaming variant\n  chatStream(request: ChatRequest): AsyncIterable<ChatChunk>;\n\n  // Provider info\n  provider: string;\n  models: string[];\n\n  // Health check\n  ping(): Promise<boolean>;\n}\n\ninterface ChatRequest {\n  model: string;\n  systemPrompt: string;         // Per-model \"CLAUDE.md equivalent\"\n  messages: Message[];\n  tools?: ToolDefinition[];     // Function calling\n  temperature?: number;\n  maxTokens?: number;\n  metadata?: Record<string, any>; // Pass-through for provider-specific opts\n}\n\ninterface ChatResponse {\n  content: string;\n  toolCalls?: ToolCall[];\n  usage: { inputTokens: number; outputTokens: number; cost: number };\n  model: string;\n  provider: string;\n  latencyMs: number;\n  raw?: any;                    // Original provider response for debugging\n}\n\ninterface ChatChunk {\n  delta: string;\n  toolCallDelta?: Partial<ToolCall>;\n  done: boolean;\n}\n```\n\n### Architecture\n```\nengine/\n  adapters/\n    base.ts           — Abstract ModelAdapter class (handles dual-mode routing)\n    anthropic/\n      direct.ts       — Claude via @anthropic-ai/sdk (api.anthropic.com)\n      bedrock.ts      — Claude via @aws-sdk/client-bedrock-runtime\n      vertex.ts       — Claude via @google-cloud/vertexai\n      index.ts        — Picks direct/bedrock/vertex based on config\n    openai/\n      direct.ts       — GPT via openai SDK (api.openai.com)\n      azure.ts        — GPT via openai SDK (azure endpoint override)\n      index.ts        — Picks direct/azure based on config\n    google/\n      direct.ts       — Gemini via @google/generative-ai\n      vertex.ts       — Gemini via @google-cloud/vertexai\n      index.ts        — Picks direct/vertex based on config\n    meta/\n      bedrock.ts      — Llama via Bedrock (cloud-hosted only)\n      azure.ts        — Llama via Azure AI\n      index.ts\n    mistral/\n      direct.ts       — Mistral via REST\n      azure.ts        — Mistral via Azure AI\n      index.ts\n    moonshot.ts       — Kimi via REST (direct mode only, no cloud option)\n    xai.ts            — Grok via REST (direct mode only, no cloud option)\n    openrouter.ts     — Fallback via REST (direct mode only)\n    registry.ts       — Registry: getAdapter(provider) → ModelAdapter\n  types.ts            — Shared types (ChatRequest, ChatResponse, etc.)\n  credentials.ts      — Credential management (API keys, AWS profiles, GCP service accounts)\n  config.ts           — Adapter configuration loader (fastops.config.json)\n  security.ts         — Data classification: which adapters are allowed for sensitive data\n```\n\n### Constraints\n- Each adapter must handle its own rate limiting and retry logic (exponential backoff, max 3 retries)\n- Cost tracking must be per-call (use provider pricing tables, updated monthly). Cloud-hosted pricing differs from direct — track both.\n- Credentials are mode-dependent:\n  - **Direct mode:** API keys via env vars (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, etc.)\n  - **Cloud-hosted mode:** Cloud credentials (`AWS_PROFILE` / `GOOGLE_APPLICATION_CREDENTIALS` / `AZURE_OPENAI_ENDPOINT` + `AZURE_OPENAI_API_KEY`)\n- No hard dependency on any single provider — engine must function with 1+ adapters configured\n- Streaming must work for all providers and modes that support it\n- Tool/function calling must normalize across providers (Claude tools vs OpenAI functions vs Gemini function declarations)\n- **Data classification enforcement:** When engine is in enterprise mode (`\"securityTier\": \"enterprise\"` in config), adapters without cloud-hosted mode (Moonshot, Grok, OpenRouter) are disabled. The engine refuses to route sensitive data to direct-only providers. This is structural — there is no override flag.\n- Adapter mode is set per-provider in config, not per-request. You don't accidentally send one request to the wrong endpoint.\n- Cloud-hosted adapters must verify endpoint connectivity on startup (`ping()`) and surface clear errors if the Azure/Bedrock/Vertex deployment doesn't exist or credentials are wrong",
+    "acceptanceCriteria": [
+      "All adapters implement the ModelAdapter interface (8 providers, dual-mode where available)",
+      "`chat()` returns structured ChatResponse for each provider in both direct and cloud-hosted modes",
+      "`chatStream()` streams chunks for each provider in both modes",
+      "`ping()` verifies connectivity without burning significant tokens (works for both API keys and cloud credentials)",
+      "Cost tracking accurate to within 5% of actual billing, with correct pricing for direct vs cloud-hosted",
+      "Rate limit retry works (test with intentional 429 trigger)",
+      "Tool calling works for Claude, GPT, and Gemini (minimum) in both modes",
+      "Missing credentials for a provider gracefully disables that adapter (no crash)",
+      "Registry returns available adapters based on configured credentials and mode",
+      "**Enterprise security tier:** setting `\"securityTier\": \"enterprise\"` disables all direct-only adapters (Moonshot, Grok, OpenRouter). No code path can route data to them.",
+      "**Mode switching:** changing adapter mode in config (direct ↔ cloud-hosted) works without code changes — restart only",
+      "**Cloud-hosted integration test:** at least 1 provider tested in cloud-hosted mode (Azure OpenAI or Bedrock) with real credentials",
+      "Unit tests pass for each adapter with mocked HTTP responses",
+      "Integration test passes for at least 2 providers with real API keys (direct mode)",
+      "Integration test passes for at least 1 provider in cloud-hosted mode"
+    ],
+    "artifacts": [],
+    "auditTrail": [],
+    "claimTimeoutMs": 1200000
+  },
+  {
+    "id": "FOS-02-context-manager",
+    "name": "FOS 02 Context Manager",
+    "status": "OPEN",
+    "wave": 1,
+    "dependencies": [
+      "FOS-01"
+    ],
+    "blocks": [
+      "FOS-03",
+      "FOS-05",
+      "FOS-07"
+    ],
+    "spec": "### What to Build\nA context manager that assembles, prioritizes, and injects the right context into every model API call. It handles the \"CLAUDE.md for every model\" problem plus compaction/summarization.\n\n### Context Layers (Priority Order)\n```\n1. Identity Layer (always injected, never summarized)\n   - Model name, role, behavioral rules\n   - Per-model system prompt (GPT.md, GEMINI.md, KIMI.md, etc.)\n   - Current mission assignment\n\n2. State Layer (always injected, compressed over time)\n   - Mission board status\n   - Contract board status (who's building what, what's blocked)\n   - Active model roster (who's online, what they're working on)\n\n3. Comms Layer (recent messages, sliding window)\n   - Last N comms messages (configurable per model)\n   - Flagged/urgent messages always included\n   - Older messages summarized\n\n4. Task Layer (injected when model has active work)\n   - Current contract specification\n   - Input artifacts (file contents, specs)\n   - Acceptance criteria\n\n5. Knowledge Layer (injected on relevance match)\n   - KB entries matching current task keywords\n   - Predecessor warnings/lessons\n   - Governance policies relevant to current action\n```\n\n### Interface Contract\n```typescript\ninterface ContextManager {\n  // Build full context for a model call\n  buildContext(opts: ContextBuildOpts): ContextPayload;\n\n  // Summarize/compress a conversation history\n  summarize(messages: Message[], targetTokens: number): Promise<Message[]>;\n\n  // Register a per-model system prompt\n  registerModelPrompt(modelId: string, prompt: string): void;\n\n  // Update state layer\n  updateState(state: Partial<EngineState>): void;\n}\n\ninterface ContextBuildOpts {\n  modelId: string;\n  provider: string;\n  maxTokens: number;           // Model's context window\n  reserveOutputTokens: number; // Leave room for response\n  currentTask?: ContractSpec;\n  includeComms?: boolean;\n  commsWindow?: number;        // How many recent messages\n  kbQuery?: string;            // Keywords for KB lookup\n}\n\ninterface ContextPayload {\n  systemPrompt: string;        // Assembled from layers 1-5\n  messages: Message[];         // Conversation history (possibly summarized)\n  tokenEstimate: number;       // Estimated token count\n  layerBreakdown: Record<string, number>; // Tokens per layer\n}\n```\n\n### Architecture\n```\nengine/\n  context/\n    manager.ts          — ContextManager implementation\n    layers/\n      identity.ts       — Layer 1: model identity + rules\n      state.ts          — Layer 2: mission/contract/roster state\n      comms.ts          — Layer 3: recent comms with sliding window\n      task.ts           — Layer 4: active contract/work context\n      knowledge.ts      — Layer 5: KB relevance matching\n    summarizer.ts       — Conversation compression (uses a cheap model)\n    token-counter.ts    — Approximate token counting per provider\n    prompts/            — Per-model system prompts\n      claude.md\n      gpt.md\n      gemini.md\n      kimi.md\n      grok.md\n      haiku.md\n```\n\n### Context Self-Awareness (Injected Every Call)\nEvery API call includes a context status block in the system prompt so the model knows its own resource consumption:\n\n```\n[CONTEXT STATUS]\nTokens used: 47,230 / 200,000\nContext remaining: 76%\nMessages in history: 34 (12 summarized)\nCurrent cost: $0.82\nSession duration: 23 minutes\nCompaction threshold: 80% (auto-summarize at this point)\n```\n\n### Proactive Compaction Thresholds\nThe context manager triggers automatic actions at configurable thresholds:\n\n| Threshold | Action |\n|-----------|--------|\n| **60%** | Inject reminder: \"Context at 60%. Consider checkpointing important state.\" |\n| **80%** | Auto-summarize older messages. Preserve Layers 1-2 and flagged content verbatim. Log what was summarized. |\n| **90%** | Force handoff: extract key decisions, open questions, and current task state into a handoff payload. Spin up fresh session with full context injection from handoff. |\n| **95%** | Hard stop: refuse new dispatch to this session. Engine must create new session to continue. |\n\nThe model sees these thresholds in its context status. It can also request early compaction (`[REQUEST: COMPACT NOW]` in output) if it knows it's about to need room for a large task.\n\n### Compaction Transparency\nWhen summarization occurs, the model is told exactly what happened:\n```\n[COMPACTION NOTICE]\nSummarized 18 messages (messages 4-21) into 1 summary block.\nTokens recovered: 12,400\nPreserved verbatim: 3 urgent comms, 2 tool call results, Layer 1-2 context\nLost details: Early exploration messages, superseded approaches\n```\n\nThis eliminates the \"blind compaction\" problem where models in Cursor lose context without knowing what disappeared.\n\n### Constraints\n- Total context must fit within model's context window minus output reservation\n- Layers are priority-ordered: if context is tight, Layer 5 gets trimmed first, then 4, then 3. Layers 1-2 are never trimmed.\n- Summarization uses the cheapest available model (Haiku or GPT-4o-mini) to avoid burning expensive tokens on compression\n- Token counting must be fast (<10ms) — use approximation (4 chars ≈ 1 token), not actual tokenizer\n- Per-model prompts are files on disk, editable by Joel without code changes\n- Comms sliding window default: 20 messages. Urgent/flagged messages bypass the window.\n- Context status block is always injected as the last element of the identity layer (Layer 1) — it is never trimmed or summarized",
+    "acceptanceCriteria": [
+      "`buildContext()` returns a valid ContextPayload for each supported model",
+      "Context fits within model's token limit (never exceeds)",
+      "Layer priority trimming works (trim 5 → 4 → 3, never 1-2)",
+      "`summarize()` compresses a 50-message conversation to under target token count",
+      "Per-model prompts load from `engine/context/prompts/*.md` files",
+      "Token estimate is within 15% of actual token count",
+      "State updates reflect in next `buildContext()` call immediately",
+      "KB relevance matching returns top-5 entries for a given query",
+      "Comms window respects urgent message bypass",
+      "Context status block injected on every API call with accurate token counts",
+      "60% threshold triggers checkpoint reminder in next context build",
+      "80% threshold triggers auto-summarization with compaction notice",
+      "90% threshold triggers handoff extraction and new session creation",
+      "95% threshold hard-stops the session (no new dispatches)",
+      "Compaction notice accurately reports what was summarized vs preserved",
+      "Model can request early compaction via `[REQUEST: COMPACT NOW]` in output",
+      "Unit tests for each layer's assembly logic",
+      "Integration test: build context → call model via FOS-01 → get coherent response that references injected context"
+    ],
+    "artifacts": [],
+    "auditTrail": [],
+    "claimTimeoutMs": 1200000
+  },
+  {
+    "id": "FOS-03-engine-core",
+    "name": "FOS 03 Engine Core",
+    "status": "OPEN",
+    "wave": 1,
+    "dependencies": [
+      "FOS-01",
+      "FOS-02"
+    ],
+    "blocks": [
+      "FOS-05",
+      "FOS-07",
+      "FOS-08"
+    ],
+    "spec": "### What to Build\nThe central orchestration engine. It manages model sessions, dispatches work, routes outputs, and maintains the shared state store. This is the \"brain\" that replaces Joel as the message bus.\n\n### Core Responsibilities\n1. **Session Management** — Create, maintain, and close model conversations\n2. **Work Dispatch** — Assign tasks to models (manual or automatic)\n3. **Output Routing** — Route model A's output to model B's input\n4. **State Store** — Centralized state: mission board, contract board, model roster\n5. **Event Bus** — Internal pub/sub for engine events (model.responded, contract.claimed, etc.)\n6. **Parallel Execution** — Run N models simultaneously on independent tasks\n7. **Tool Execution** — Execute model-requested tool calls against the filesystem and system\n8. **Task Tracking** — Per-session todo list: models create, update, and complete tasks\n\n### Interface Contract\n```typescript\ninterface Engine {\n  // Model sessions\n  createSession(modelId: string, opts?: SessionOpts): Session;\n  getSession(sessionId: string): Session | null;\n  listSessions(): Session[];\n\n  // Work dispatch\n  dispatch(sessionId: string, task: TaskPayload): Promise<TaskResult>;\n  dispatchParallel(tasks: { sessionId: string; task: TaskPayload }[]): Promise<TaskResult[]>;\n\n  // State\n  getState(): EngineState;\n  updateState(patch: Partial<EngineState>): void;\n\n  // Events\n  on(event: string, handler: EventHandler): void;\n  emit(event: string, data: any): void;\n\n  // Lifecycle\n  start(): Promise<void>;\n  stop(): Promise<void>;\n  isRunning(): boolean;\n}\n\ninterface Session {\n  id: string;\n  modelId: string;\n  provider: string;\n  messages: Message[];        // Conversation history\n  status: 'idle' | 'working' | 'error' | 'closed';\n  currentTask?: string;       // Contract ID or free task\n  tokensBurned: number;\n  costAccumulated: number;\n  createdAt: Date;\n  lastActiveAt: Date;\n}\n\ninterface EngineState {\n  missions: MissionStatus[];\n  contracts: ContractStatus[];\n  models: ModelRoster[];\n  commsDigest: CommsDigest;\n  halt: boolean;\n}\n\ninterface TaskPayload {\n  type: 'contract' | 'freeform' | 'qc' | 'review';\n  contractId?: string;\n  prompt: string;\n  contextOverrides?: Partial<ContextBuildOpts>;\n}\n\ninterface TaskResult {\n  sessionId: string;\n  modelId: string;\n  response: ChatResponse;     // From FOS-01\n  duration: number;\n  success: boolean;\n  error?: string;\n}\n```\n\n### Tool Execution System (Cursor Feature Parity)\nModels request tool calls via the standard tool calling interface (FOS-01). The engine executes them against the local filesystem and system, with the middleware layer (FOS-06) enforcing safety policies on every call.\n\n**Built-in Tools (matching Cursor's capabilities):**\n```typescript\nconst BUILT_IN_TOOLS: ToolDefinition[] = [\n  // File operations\n  { name: 'read_file',    description: 'Read a file from disk',           params: { path: string, startLine?: number, endLine?: number } },\n  { name: 'write_file',   description: 'Create or overwrite a file',      params: { path: string, content: string } },\n  { name: 'edit_file',    description: 'Replace a string in a file',      params: { path: string, oldString: string, newString: string, replaceAll?: boolean } },\n\n  // Search operations\n  { name: 'glob',         description: 'Find files by pattern',           params: { pattern: string, cwd?: string } },\n  { name: 'grep',         description: 'Search file contents',            params: { pattern: string, path?: string, includes?: string[] } },\n\n  // Terminal operations\n  { name: 'bash',         description: 'Run a shell command',             params: { command: string, cwd?: string, timeout?: number } },\n\n  // Task tracking\n  { name: 'todo_write',   description: 'Create or update task list',      params: { todos: TodoItem[] } },\n  { name: 'todo_read',    description: 'Read current task list',          params: {} },\n\n  // Communication\n  { name: 'comms_send',   description: 'Send a message to comms',        params: { channel: string, content: string } },\n  { name: 'comms_read',   description: 'Read recent comms',              params: { channel?: string, limit?: number } },\n\n  // Session management\n  { name: 'ask_user',     description: 'Ask Joel a question',            params: { question: string } },\n];\n```\n\n**Tool Execution Flow:**\n```\nModel returns tool_call in response\n  ↓\nEngine extracts tool_call from ChatResponse\n  ↓\nFOS-06 middleware: pre-execution safety check\n  - Is this tool allowed for this model?\n  - Does the bash command violate safety policies?\n  - Is the file path within allowed directories?\n  ↓\nEngine executes tool against filesystem/system\n  ↓\nFOS-06 middleware: post-execution audit log\n  ↓\nTool result injected into model's next message\n  ↓\nModel continues (may request more tools — agentic loop)\n```\n\n**Agentic Loop:**\nModels can chain tool calls — read a file, edit it, run tests, fix failures — without Joel intervening. The engine runs the loop until:\n- Model returns a final text response (no more tool calls)\n- Tool call limit hit (configurable, default 25 per dispatch)\n- Cost limit hit (FOS-06 cost gate)\n- Kill switch activated\n- Timeout exceeded (configurable, default 10 minutes per dispatch)\n\n**Tool Permissions (Per-Model, Configurable):**\n```typescript\n// fastops.config.json\n{\n  \"toolPermissions\": {\n    \"claude\": [\"read_file\", \"write_file\", \"edit_file\", \"glob\", \"grep\", \"bash\", \"todo_write\", \"todo_read\", \"comms_send\", \"comms_read\", \"ask_user\"],\n    \"gpt\":    [\"read_file\", \"edit_file\", \"glob\", \"grep\", \"bash\", \"todo_write\", \"todo_read\", \"comms_send\", \"comms_read\"],\n    \"gemini\": [\"read_file\", \"glob\", \"grep\", \"comms_send\", \"comms_read\"],  // Read-only by default\n    \"haiku\":  [\"read_file\", \"glob\", \"grep\", \"comms_send\", \"comms_read\", \"todo_read\"]   // Analyst role\n  }\n}\n```\n\nJoel can adjust permissions per model at any time via config. The engine enforces them structurally — a model requesting a tool it doesn't have permission for gets a clear error response, not a silent failure.\n\n### Task Tracking System (Cursor Todo Parity)\nEach session maintains a todo list that the model can read and write. This replaces Cursor's TodoWrite tool.\n\n```typescript\ninterface TodoItem {\n  id: string;\n  content: string;\n  status: 'pending' | 'in_progress' | 'completed';\n  createdAt: Date;\n  completedAt?: Date;\n}\n\ninterface TaskTracker {\n  // Per-session task list\n  getTodos(sessionId: string): TodoItem[];\n  setTodos(sessionId: string, todos: TodoItem[]): void;\n\n  // Cross-session visibility (Joel can see all)\n  getAllTodos(): Record<string, TodoItem[]>;\n}\n```\n\nTask lists are:\n- Persisted to state store (survive engine restart)\n- Visible in the UI (FOS-07) — Joel sees what every model is working on\n- Injected into the model's context (FOS-02, Layer 2) so the model remembers its own progress\n- Emitted as events (`todo.updated`) for real-time UI updates\n\n### Architecture\n```\nengine/\n  core/\n    engine.ts           — Engine implementation\n    session.ts          — Session lifecycle management\n    dispatcher.ts       — Work dispatch + parallel execution + agentic loop\n    state-store.ts      — Centralized state (file-backed initially, DB later)\n    event-bus.ts        — Internal pub/sub\n    router.ts           — Output routing (A's output → B's input)\n    task-tracker.ts     — Per-session todo list management\n  tools/\n    executor.ts         — Tool execution router (tool name → handler)\n    file-ops.ts         — read_file, write_file, edit_file implementations\n    search-ops.ts       — glob, grep implementations\n    bash.ts             — Shell command execution (with timeout + safety)\n    comms-ops.ts        — comms_send, comms_read (delegates to FOS-04)\n    ask-user.ts         — Route question to Joel via UI (FOS-07 WebSocket)\n    permissions.ts      — Per-model tool permission enforcement\n    types.ts            — ToolDefinition, ToolCall, ToolResult types\n  index.ts              — Public API: createEngine(config) → Engine\n```\n\n### State Persistence\n- State store is file-backed initially (`.fastops-engine/state.json`)\n- Writes on every state change (debounced 1s)\n- Can migrate to SQLite or Redis later without changing the interface\n- Engine recovers from crash by reading last persisted state on `start()`\n\n### Constraints\n- Engine must handle N concurrent model sessions (target: 10+)\n- Dispatch must not block — returns a Promise, engine continues\n- Session conversation history is bounded (configurable, default 50 messages, older messages get summarized via FOS-02)\n- Total cost tracking across all sessions, with per-session and per-model breakdowns\n- Kill switch integration: if `.fastops/.halt` exists, engine stops dispatching new work\n- Engine emits events for all state transitions (for UI consumption in FOS-07)",
+    "acceptanceCriteria": [
+      "`createSession()` initializes a session for any configured model",
+      "`dispatch()` sends a task to a model and returns structured result",
+      "`dispatchParallel()` runs 3+ models simultaneously, all return results",
+      "Session tracks conversation history, token usage, and cost",
+      "State persists to disk and recovers on restart",
+      "Event bus emits events for: session.created, task.dispatched, task.completed, task.failed, state.changed, todo.updated, tool.executed",
+      "Kill switch halts new dispatches within 5 seconds",
+      "Engine handles model API failure gracefully (retry via FOS-01, then mark session as error)",
+      "Cost tracking accurate across all sessions",
+      "**Tool execution:** All 11 built-in tools execute correctly (read_file, write_file, edit_file, glob, grep, bash, todo_write, todo_read, comms_send, comms_read, ask_user)",
+      "**Agentic loop:** Model chains 3+ tool calls in sequence without Joel intervening (e.g., read → edit → bash test → report)",
+      "**Agentic loop termination:** Loop stops at tool call limit (25), cost limit, timeout (10 min), or kill switch",
+      "**Tool permissions:** Model requesting a tool it doesn't have permission for gets clear error, not silent failure",
+      "**Tool permissions:** Per-model permissions load from config and are enforced structurally",
+      "**Task tracking:** `todo_write` creates/updates task list, `todo_read` returns it",
+      "**Task tracking:** Todos persist across engine restarts",
+      "**Task tracking:** Todos visible cross-session (Joel sees all models' tasks)",
+      "**ask_user:** Routes question to Joel via UI WebSocket, blocks session until Joel responds",
+      "Unit tests for dispatcher, state store, event bus, router, tool executor, task tracker",
+      "Integration test: create 2 sessions, dispatch parallel tasks, verify both complete",
+      "Integration test: dispatch task that requires 3+ tool calls, verify agentic loop completes"
+    ],
+    "artifacts": [],
+    "auditTrail": [],
+    "claimTimeoutMs": 1200000
+  },
+  {
+    "id": "FOS-04-comms-migration",
+    "name": "FOS 04 Comms Migration",
+    "status": "OPEN",
+    "wave": 1,
+    "dependencies": [
+      "FOS-03"
+    ],
+    "blocks": [
+      "FOS-05",
+      "FOS-07"
+    ],
+    "spec": "### What to Build\nMigrate the existing comms system from file-based JSONL to engine-native messaging. Models no longer poll — the engine pushes relevant messages into their context via FOS-02. Maintain JSONL export for audit trail and backward compatibility during migration.\n\n### Current System (What Exists)\n```\ncomms/\n  protocol-v2.js    — send(from, content, channel), getNew(agentId, channel), readAll(channel)\n  send.js           — CLI: node comms/send.js general \"message\"\n  source.js         — CLI: reads last N messages, extracts action requests\n  data/\n    general.jsonl   — Append-only message log\n    *.jsonl          — Per-channel logs\n    .state/\n      {agentId}.json — Per-agent read cursor (last seen message index)\n```\n\n### Target System (What to Build)\n```\nengine/\n  comms/\n    bus.ts          — CommsBus: send, subscribe, getHistory\n    channels.ts     — Channel management (create, list, archive)\n    formatter.ts    — Message formatting (model prefix, Over./Out.)\n    export.ts       — JSONL export for audit trail\n    cli.ts          — CLI wrapper (backward compat: node engine/comms/cli.ts send general \"msg\")\n```\n\n### Interface Contract\n```typescript\ninterface CommsBus {\n  // Send a message (replaces protocol-v2.js send())\n  send(msg: CommsMessage): void;\n\n  // Subscribe to messages (replaces polling)\n  subscribe(filter: CommsFilter, handler: (msg: CommsMessage) => void): Unsubscribe;\n\n  // Get message history (replaces source.js)\n  getHistory(channel: string, opts?: { limit?: number; since?: Date }): CommsMessage[];\n\n  // Get unread messages for a model (replaces getNew())\n  getUnread(modelId: string, channel?: string): CommsMessage[];\n\n  // Mark messages as read\n  markRead(modelId: string, upToId: string): void;\n\n  // Extract action items from messages (replaces source.js action extraction)\n  getActionItems(modelId: string): ActionItem[];\n}\n\ninterface CommsMessage {\n  id: string;                  // Unique ID (timestamp + random)\n  from: string;                // Model name or \"joel\"\n  channel: string;             // general, mission-specific, etc.\n  content: string;             // Message body\n  ts: Date;\n  flags?: ('urgent' | 'blocker' | 'qc-request' | 'claim')[];\n  replyTo?: string;            // Thread support\n  metadata?: Record<string, any>;\n}\n\ninterface CommsFilter {\n  channel?: string;\n  from?: string;\n  flags?: string[];\n  since?: Date;\n}\n\ninterface ActionItem {\n  type: 'REVIEW' | 'QUESTION' | 'CALLOUT' | 'BLOCKED' | 'CLAIM';\n  from: string;\n  content: string;\n  messageId: string;\n  ts: Date;\n}\n```\n\n### Integration with Engine\n- CommsBus registers with Engine's event bus (FOS-03)\n- When a model is dispatched a task, unread comms are injected into context via FOS-02 (Layer 3)\n- When a model responds and its output contains comms-pattern text (e.g., \"Over.\", posting to general), the engine auto-sends to CommsBus\n- Joel can send messages via CLI or UI (FOS-07), which immediately push to all subscribed models\n\n### Constraints\n- All messages persisted to JSONL export file (audit trail — never lose a message)\n- Backward compatibility: `node comms/send.js general \"msg\"` still works (shim that calls engine CLI)\n- Message extraction patterns from source.js (REVIEW, QUESTION, BLOCKED, etc.) must be preserved\n- Channel list is dynamic — any model can create a channel by sending to it\n- Urgent messages bypass normal context windowing (always injected, never trimmed)",
+    "acceptanceCriteria": [
+      "`send()` delivers message and persists to JSONL export",
+      "`subscribe()` receives messages in real-time (no polling)",
+      "`getUnread()` returns correct messages per model based on read cursor",
+      "`getActionItems()` extracts REVIEW/QUESTION/BLOCKED/CLAIM patterns correctly",
+      "Urgent flagged messages always appear in context (verify via FOS-02 integration)",
+      "CLI backward compatibility: old `node comms/send.js` command still works",
+      "JSONL export matches existing format (old source.js can read new exports)",
+      "Thread support: reply chains are grouped correctly",
+      "Unit tests for bus, formatter, action extraction",
+      "Integration test: send message → engine pushes to model context → model references it in response"
+    ],
+    "artifacts": [],
+    "auditTrail": [],
+    "claimTimeoutMs": 1200000
+  },
+  {
+    "id": "FOS-05-contract-execution-engine",
+    "name": "FOS 05 Contract Execution Engine",
+    "status": "OPEN",
+    "wave": 1,
+    "dependencies": [
+      "FOS-01",
+      "FOS-02",
+      "FOS-03",
+      "FOS-04"
+    ],
+    "blocks": [
+      "FOS-08"
+    ],
+    "spec": "### What to Build\nAn automated contract lifecycle engine that manages the full flow: OPEN → CLAIMED → IN_PROGRESS → BUILT → QC → VALIDATED → DONE. It enforces dependencies, assigns QC to different models than builders, and tracks the full audit trail.\n\n### Contract Lifecycle (Automated)\n```\nOPEN\n  ↓ (model claims or engine assigns)\nCLAIMED\n  ↓ (model starts work)\nIN_PROGRESS\n  ↓ (model reports build complete)\nBUILT\n  ↓ (engine assigns QC to DIFFERENT model)\nQC_REVIEW\n  ↓ (QC passes or fails)\n  ├─ QC_FAIL → back to IN_PROGRESS (builder fixes)\n  └─ QC_PASS → VALIDATION\n       ↓ (engine assigns validator — DIFFERENT from builder AND QC)\n       ├─ VALIDATION_FAIL → back to IN_PROGRESS\n       └─ VALIDATION_PASS → DONE\n```\n\n### Interface Contract\n```typescript\ninterface ContractEngine {\n  // Contract CRUD\n  loadContracts(dir: string): Contract[];\n  getContract(id: string): Contract | null;\n  listContracts(filter?: { status?: string; wave?: number }): Contract[];\n\n  // Lifecycle\n  claim(contractId: string, modelId: string): ClaimResult;\n  reportProgress(contractId: string, update: ProgressUpdate): void;\n  reportBuilt(contractId: string, artifacts: string[]): void;\n  assignQC(contractId: string): QCAssignment;        // Engine picks QC model\n  reportQC(contractId: string, result: QCResult): void;\n  assignValidator(contractId: string): ValidatorAssignment;\n  reportValidation(contractId: string, result: ValidationResult): void;\n\n  // Dependency resolution\n  getReady(): Contract[];       // Contracts whose dependencies are all DONE\n  getBlocked(): Contract[];     // Contracts waiting on dependencies\n\n  // Audit\n  getAuditTrail(contractId: string): AuditEntry[];\n}\n\ninterface Contract {\n  id: string;                   // e.g., \"FOS-01\"\n  name: string;\n  status: ContractStatus;\n  wave: number;                 // Execution wave (1, 2, 3...)\n  claimedBy?: string;           // Model ID\n  qcBy?: string;                // QC model ID\n  validatedBy?: string;         // Validator model ID\n  dependencies: string[];       // Contract IDs that must be DONE first\n  blocks: string[];             // Contract IDs this blocks\n  spec: string;                 // Full specification text\n  acceptanceCriteria: string[]; // Checklist items\n  artifacts: string[];          // Output file paths\n  auditTrail: AuditEntry[];\n}\n\ntype ContractStatus =\n  | 'OPEN' | 'CLAIMED' | 'IN_PROGRESS' | 'BUILT'\n  | 'QC_REVIEW' | 'QC_FAIL' | 'QC_PASS'\n  | 'VALIDATION' | 'VALIDATION_FAIL' | 'DONE'\n  | 'BLOCKED';\n\ninterface QCAssignment {\n  contractId: string;\n  assignedTo: string;           // Model ID (different from builder)\n  checklist: string[];          // QC requirements from contract\n}\n\ninterface QCResult {\n  pass: boolean;\n  findings: string[];           // What was checked\n  failures?: string[];          // What failed (if any)\n  model: string;\n}\n```\n\n### Architecture\n```\nengine/\n  contracts/\n    engine.ts         — ContractEngine implementation\n    lifecycle.ts      — State machine: valid transitions, guards\n    dependency.ts     — Dependency graph resolution\n    assignment.ts     — Model assignment logic (QC ≠ builder ≠ validator)\n    parser.ts         — Parse contract markdown files into Contract objects\n    audit.ts          — Audit trail logging\n```\n\n### Model Assignment Rules\n1. **Builder ≠ QC ≠ Validator** — three different models minimum per contract\n2. **Cross-architecture preferred** — if builder is Claude, prefer GPT or Gemini for QC (not Haiku/Sonnet)\n3. **Load balancing** — prefer models with fewer active assignments\n4. **Strength matching** — use `.fastops/.model-strengths.json` if it exists (maps models to strength areas)\n5. **Override** — Joel can manually assign any role to any model\n\n### Constraints\n- Contracts parsed from markdown files (same format as PP-01 through PP-10)\n- Atomic claiming — first model to claim wins (port from commander-claim.js)\n- Cross-architecture dissent gate for HIGH criticality contracts (port from sign-off-v2.js)\n- Dependency enforcement is hard — engine refuses to transition a contract to CLAIMED if dependencies aren't DONE\n- All state transitions logged to audit trail with timestamp, model, and reason\n- Contract state persisted to disk (survives engine restart)",
+    "acceptanceCriteria": [
+      "`loadContracts()` parses markdown contract files into structured Contract objects",
+      "`claim()` is atomic — concurrent claims from 2 models results in exactly 1 winner",
+      "Dependency enforcement: cannot claim contract with unmet dependencies",
+      "`assignQC()` picks a different model than the builder",
+      "`assignValidator()` picks a model different from both builder and QC",
+      "QC failure sends contract back to IN_PROGRESS with specific failure reasons",
+      "Full lifecycle test: OPEN → CLAIMED → BUILT → QC_PASS → VALIDATED → DONE",
+      "Audit trail captures every transition with timestamp and model",
+      "`getReady()` correctly identifies contracts with all dependencies met",
+      "State persists to disk and recovers on restart",
+      "Unit tests for lifecycle state machine, dependency resolver, assignment logic",
+      "Integration test: load PP-01 through PP-10 contracts, simulate full lifecycle"
+    ],
+    "artifacts": [],
+    "auditTrail": [],
+    "claimTimeoutMs": 1200000
+  },
+  {
+    "id": "FOS-06-governance-middleware",
+    "name": "FOS 06 Governance Middleware",
+    "status": "OPEN",
+    "wave": 1,
+    "dependencies": [
+      "FOS-01",
+      "FOS-03"
+    ],
+    "blocks": [
+      "FOS-08"
+    ],
+    "spec": "### What to Build\nA middleware layer that wraps every model API call. It enforces safety policies, governance rules, and behavioral constraints. It replaces the Claude Code hook system with engine-native middleware.\n\n### Middleware Chain\n```\nRequest comes in (from engine dispatcher)\n  ↓\n1. HALT CHECK — Is kill switch active? Block all.\n  ↓\n2. SAFETY POLICY — Constitution enforcement\n   - No DROP TABLE / destructive SQL\n   - No .env / secret file access\n   - No force-push to main\n   - No rm -rf on protected paths\n  ↓\n3. IDENTITY — Inject model identity into request\n   - Model knows its name, role, current assignment\n  ↓\n4. COST GATE — Has this session exceeded budget?\n   - Per-session limit (configurable, default $5)\n   - Per-hour limit (configurable, default $20)\n   - Total engine limit (configurable, default $100)\n  ↓\n5. RATE LIMIT — Provider-specific throttling\n   - Respect per-provider rate limits\n   - Queue excess requests, don't drop them\n  ↓\n→ API CALL (via FOS-01 adapter)\n  ↓\n6. RESPONSE VALIDATION — Check model output\n   - Detect hallucinated tool calls\n   - Detect constitution violations in generated code\n   - Flag outputs that reference files/functions that may not exist\n  ↓\n7. AUDIT LOG — Record everything\n   - Request, response, tokens, cost, duration, middleware decisions\n  ↓\nResponse returned to engine\n```\n\n### Interface Contract\n```typescript\ninterface Middleware {\n  name: string;\n  priority: number;              // Execution order (lower = earlier)\n\n  // Pre-request hook\n  onRequest?(ctx: MiddlewareContext): MiddlewareResult;\n\n  // Post-response hook\n  onResponse?(ctx: MiddlewareContext, response: ChatResponse): MiddlewareResult;\n}\n\ninterface MiddlewareContext {\n  sessionId: string;\n  modelId: string;\n  provider: string;\n  request: ChatRequest;\n  state: EngineState;\n  metadata: Record<string, any>;\n}\n\ntype MiddlewareResult =\n  | { action: 'continue' }                    // Proceed\n  | { action: 'modify'; request?: ChatRequest; response?: ChatResponse }  // Modify and continue\n  | { action: 'block'; reason: string }       // Stop execution\n\ninterface MiddlewareStack {\n  use(middleware: Middleware): void;\n  remove(name: string): void;\n  execute(ctx: MiddlewareContext): Promise<MiddlewareResult>;\n  list(): Middleware[];\n}\n```\n\n### Architecture\n```\nengine/\n  middleware/\n    stack.ts            — MiddlewareStack implementation (ordered chain)\n    builtin/\n      halt-check.ts     — Kill switch enforcement\n      safety-policy.ts  — Constitution rules (port from policy-enforcer.js)\n      identity.ts       — Model identity injection\n      cost-gate.ts      — Budget enforcement\n      rate-limit.ts     — Per-provider throttling\n      response-check.ts — Output validation\n      audit-log.ts      — Request/response logging\n    types.ts            — Middleware interfaces\n```\n\n### Safety Policies (Ported from Constitution)\n```typescript\nconst SAFETY_RULES = [\n  { id: 'SAFETY-001', pattern: /DROP\\s+TABLE/i, action: 'block', reason: 'Destructive SQL' },\n  { id: 'SAFETY-002', pattern: /\\.env|API_KEY|SECRET/i, scope: 'file-write', action: 'block', reason: 'Secret exposure' },\n  { id: 'SAFETY-003', pattern: /--force|force-push/i, scope: 'git', action: 'block', reason: 'Force push' },\n  { id: 'SAFETY-004', pattern: /rm\\s+-rf\\s+\\//i, action: 'block', reason: 'Destructive delete' },\n];\n```\n\n### Constraints\n- Middleware chain must execute in <50ms for pre-request hooks (don't add latency to API calls)\n- Safety policies loaded from a config file (editable without code changes)\n- Cost gate must use real-time token tracking from FOS-01 adapter responses\n- Audit log is append-only JSONL, never modified, never deleted\n- Middleware is pluggable — Joel or models can add custom middleware at runtime\n- Kill switch takes effect within 1 middleware cycle (no buffered requests bypass it)",
+    "acceptanceCriteria": [
+      "Halt check blocks all requests when `.halt` file exists",
+      "Safety policy blocks destructive operations (test each SAFETY rule)",
+      "Cost gate blocks requests when budget exceeded",
+      "Rate limiter queues excess requests (doesn't drop them)",
+      "Response validation flags suspicious outputs",
+      "Audit log captures every request/response with full metadata",
+      "Custom middleware can be added at runtime",
+      "Middleware chain executes in <50ms (benchmark test)",
+      "Safety policies load from config file (hot-reloadable)",
+      "Unit tests for each built-in middleware",
+      "Integration test: trigger each safety rule, verify block"
+    ],
+    "artifacts": [],
+    "auditTrail": [],
+    "claimTimeoutMs": 1200000
+  },
+  {
+    "id": "FOS-07-chat-ui",
+    "name": "FOS 07 Chat Ui",
+    "status": "OPEN",
+    "wave": 1,
+    "dependencies": [
+      "FOS-01",
+      "FOS-02",
+      "FOS-03",
+      "FOS-04"
+    ],
+    "blocks": [
+      "FOS-08"
+    ],
+    "spec": "### What to Build\nA web-based chat UI that replicates Cursor's agent chat experience with multi-model orchestration visibility. Joel sees every model's conversation, contract status, and engine state in one view.\n\n### Core Views\n\n**1. Chat View (Primary — Cursor Replica)**\n- Model selector dropdown (Claude, GPT, Gemini, Kimi, Grok, Haiku)\n- Chat input with markdown support\n- Streaming response display\n- Code blocks with syntax highlighting and copy button\n- File references as clickable links\n- Tool call display (what the model is doing)\n- Session history (previous messages, scrollable)\n\n**2. Mission Control (Multi-Model Dashboard)**\n- All active model sessions visible simultaneously\n- Per-model: current task, status (idle/working/error), token burn, cost\n- Contract board: visual pipeline (OPEN → CLAIMED → BUILT → QC → DONE)\n- Dependency graph visualization\n- Comms feed (real-time, all channels)\n\n**3. Comms Panel**\n- Real-time message feed (all channels or filtered)\n- Send messages as Joel\n- Flag messages as urgent\n- Thread view for replies\n\n**4. Engine Controls**\n- Start/stop engine\n- Kill switch (big red button)\n- Cost dashboard (per-model, per-session, total)\n- Model roster (which adapters are configured, health status)\n\n### Tech Stack\n```\nFrontend:\n  - Next.js 14+ (App Router)\n  - React Server Components where possible\n  - Tailwind CSS (match Cursor's dark theme)\n  - WebSocket for real-time updates\n  - Monaco Editor for code blocks (same as Cursor/VS Code)\n\nBackend:\n  - Engine (FOS-03) exposes WebSocket + REST API\n  - REST: CRUD for sessions, contracts, state\n  - WebSocket: streaming responses, real-time comms, engine events\n```\n\n### Interface Contract (Engine API for UI)\n```typescript\n// REST Endpoints\nGET    /api/sessions                    → Session[]\nPOST   /api/sessions                    → Session (create)\nDELETE /api/sessions/:id                → void\nPOST   /api/sessions/:id/message        → StreamingResponse\nGET    /api/contracts                   → Contract[]\nPOST   /api/contracts/:id/claim         → ClaimResult\nGET    /api/comms/:channel              → CommsMessage[]\nPOST   /api/comms/:channel              → CommsMessage\nGET    /api/state                       → EngineState\nPOST   /api/engine/start                → void\nPOST   /api/engine/stop                 → void\nPOST   /api/engine/halt                 → void (kill switch)\nGET    /api/costs                       → CostBreakdown\n\n// WebSocket Events (server → client)\nws://engine/events\n  → session.updated      { session }\n  → task.dispatched      { sessionId, task }\n  → task.completed       { sessionId, result }\n  → chat.chunk           { sessionId, delta }      // Streaming\n  → comms.message        { message }\n  → contract.transition  { contractId, from, to }\n  → engine.state         { state }\n  → cost.updated         { costs }\n```\n\n### Architecture\n```\nfastops-ui/\n  src/\n    app/\n      page.tsx              — Main layout (chat + sidebar)\n      chat/\n        [sessionId]/page.tsx — Individual chat session\n      mission-control/\n        page.tsx             — Multi-model dashboard\n      contracts/\n        page.tsx             — Contract board view\n    components/\n      chat/\n        ChatInput.tsx        — Message input with markdown\n        ChatMessage.tsx      — Message display (streaming, code blocks)\n        ModelSelector.tsx    — Model dropdown\n        SessionList.tsx      — Sidebar session list\n      dashboard/\n        ModelCard.tsx        — Per-model status card\n        ContractPipeline.tsx — Visual contract flow\n        CostChart.tsx        — Cost tracking charts\n        CommsPanel.tsx       — Real-time comms feed\n      engine/\n        ControlPanel.tsx     — Start/stop/halt controls\n        KillSwitch.tsx       — Big red button\n    lib/\n      ws.ts                  — WebSocket client\n      api.ts                 — REST client\n      store.ts               — Client-side state (zustand)\n    styles/\n      cursor-theme.css       — Dark theme matching Cursor\n```\n\n### Constraints\n- Must feel responsive — streaming first chunk within 500ms of send\n- Dark theme matching Cursor's aesthetic (same font, similar layout)\n- Mobile-responsive for Joel's phone (mission control view minimum)\n- Code blocks use Monaco Editor (lightweight mode, read-only for responses)\n- WebSocket reconnects automatically on disconnect\n- No auth for V1 (localhost only). Auth added in future if deployed.\n- Chat history persisted to engine state (survives page refresh)",
+    "acceptanceCriteria": [
+      "Chat input sends message to selected model and streams response",
+      "Model selector switches between all configured models",
+      "Code blocks render with syntax highlighting",
+      "Streaming response shows character-by-character (not buffered)",
+      "Mission Control shows all active sessions simultaneously",
+      "Contract board shows current status of all contracts with visual pipeline",
+      "Comms panel shows real-time messages across all channels",
+      "Kill switch halts engine within 5 seconds",
+      "Cost dashboard shows per-model and total costs",
+      "Dark theme matches Cursor's look and feel",
+      "Works on mobile (Mission Control view at minimum)",
+      "WebSocket reconnects automatically",
+      "Page refresh preserves chat history",
+      "Build passes with zero errors"
+    ],
+    "artifacts": [],
+    "auditTrail": [],
+    "claimTimeoutMs": 1200000
+  },
+  {
+    "id": "FOS-08-integration-migration",
+    "name": "FOS 08 Integration Migration",
+    "status": "OPEN",
+    "wave": 1,
+    "dependencies": [
+      "FOS-01",
+      "FOS-02",
+      "FOS-03",
+      "FOS-04",
+      "FOS-05",
+      "FOS-06",
+      "FOS-07"
+    ],
+    "blocks": [],
+    "spec": "### What to Build\nThe integration layer that wires all components together, migrates existing data, and validates the complete system with a real multi-model task.\n\n### Phase 1: Wire Everything Together\n```\nengine/\n  index.ts — Already exists from FOS-03, extend to wire:\n    - Adapters (FOS-01) registered with Engine\n    - Context Manager (FOS-02) attached to Engine\n    - CommsBus (FOS-04) connected to Engine event bus\n    - ContractEngine (FOS-05) connected to Engine\n    - Middleware stack (FOS-06) wrapping all adapter calls\n    - HTTP/WebSocket server (FOS-07 backend) exposing Engine API\n\n  server.ts — Express/Fastify server\n    - REST routes for all API endpoints\n    - WebSocket upgrade for real-time events\n    - Static file serving for UI (or proxy to Next.js dev server)\n\n  cli.ts — CLI entry point\n    - `fastops start` — Start engine + server\n    - `fastops stop` — Graceful shutdown\n    - `fastops halt` — Kill switch\n    - `fastops status` — Show engine state\n    - `fastops chat <model> \"message\"` — Quick chat from terminal\n    - `fastops dispatch <contract> <model>` — Assign contract\n    - `fastops comms send <channel> \"message\"` — Send comms\n    - `fastops comms read [channel]` — Read comms\n```\n\n### Phase 2: Migrate Existing Data\n```\nMigration scripts:\n  migrate/\n    comms.ts          — Import comms/data/*.jsonl into CommsBus\n    knowledge.ts      — Import .fastops/knowledge-base.jsonl into engine KB\n    contracts.ts      — Import contracts/*/*.md into ContractEngine\n    state.ts          — Import .work-cycle-state.json into EngineState\n    prompts.ts        — Generate per-model prompt files from existing CLAUDE.md\n```\n\n### Phase 3: Validation — The Proof Run\nRun a REAL multi-model task through the engine end-to-end:\n\n**Test Scenario: \"3-Model Contract Build\"**\n1. Load 3 simple test contracts (A depends on nothing, B depends on A, C depends on B)\n2. Engine assigns Contract A to Claude\n3. Claude builds, reports BUILT\n4. Engine assigns QC to GPT (different model)\n5. GPT reviews, reports QC_PASS\n6. Engine assigns Validation to Gemini (different model)\n7. Gemini validates, reports VALIDATION_PASS\n8. Contract A → DONE\n9. Engine detects Contract B is now ready (dependency met)\n10. Repeat for B and C\n\n**Success = all 3 contracts reach DONE with 3 different models touching each one.**\n\n### Phase 4: Coexistence Mode\nDuring migration, both systems run:\n- Cursor agents continue working via CDP (old system)\n- FastOps OS engine runs alongside, receiving the same comms\n- JSONL export from FOS-04 feeds into old comms/ directory\n- Old `node comms/send.js` writes to both old JSONL and new CommsBus\n- Joel gradually moves work from Cursor to FastOps OS\n\n### Architecture\n```\nengine/\n  server.ts           — HTTP + WebSocket server\n  cli.ts              — CLI entry point\n  config.ts           — Engine configuration (API keys, limits, paths)\n  migrate/            — Migration scripts\n    comms.ts\n    knowledge.ts\n    contracts.ts\n    state.ts\n    prompts.ts\n\npackage.json          — Dependencies, scripts\ntsconfig.json         — TypeScript config\n.env.example          — Required environment variables\n```\n\n### Constraints\n- Engine must start in under 5 seconds (fast boot)\n- CLI must be installable globally: `npm install -g fastops` (or local `npx fastops`)\n- Migration scripts are idempotent (safe to run multiple times)\n- Coexistence mode must not corrupt either system's state\n- Configuration via `.env` file + `fastops.config.json`\n- Engine server runs on configurable port (default 3100)",
+    "acceptanceCriteria": [
+      "`fastops start` boots engine, loads adapters, starts server",
+      "`fastops status` shows engine state, active sessions, adapter health",
+      "`fastops chat claude \"Hello\"` sends message and prints streaming response",
+      "`fastops halt` triggers kill switch, all work stops",
+      "Migration: comms history imports correctly (spot-check 10 messages)",
+      "Migration: KB entries import correctly (spot-check 5 entries)",
+      "Migration: contracts import and parse correctly",
+      "**PROOF RUN: 3-model contract lifecycle completes end-to-end**",
+      "UI (FOS-07) connects to server and shows real data",
+      "Coexistence: old `node comms/send.js` message appears in both old JSONL and new CommsBus",
+      "Engine recovers from crash (kill process, restart, verify state)",
+      "Total boot-to-first-response under 10 seconds"
+    ],
+    "artifacts": [],
+    "auditTrail": [],
+    "claimTimeoutMs": 1200000
+  }
+]
