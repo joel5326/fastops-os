@@ -7,6 +7,14 @@ import { buildCommsLayer, type CommsMessage } from './layers/comms.js';
 import { buildTaskLayer, type ContractSpec } from './layers/task.js';
 import { buildKnowledgeLayer, type KBEntry } from './layers/knowledge.js';
 import { summarizeMessages, type SummarizationResult } from './summarizer.js';
+import {
+  DEFAULT_COMPACTION_POLICY,
+  DEFAULT_SUMMARIZATION_POLICY,
+  normalizeCompactionPolicy,
+  type CompactionPolicy,
+  type CompactionThreshold,
+  type SummarizationPolicy,
+} from './compaction-policy.js';
 
 export interface ContextBuildOpts {
   modelId: string;
@@ -28,8 +36,6 @@ export interface ContextPayload {
   compactionNotice?: string;
 }
 
-export type CompactionThreshold = 60 | 80 | 90 | 95;
-
 export interface CompactionEvent {
   threshold: CompactionThreshold;
   action: string;
@@ -46,7 +52,8 @@ export class ContextManager {
   private sessionStartTime = Date.now();
   private totalCost = 0;
   private promptsDir: string;
-  private compactionThreshold: CompactionThreshold = 80;
+  private compactionPolicy: CompactionPolicy = DEFAULT_COMPACTION_POLICY;
+  private summarizationPolicy: SummarizationPolicy = DEFAULT_SUMMARIZATION_POLICY;
   private lastCompactionNotice?: string;
 
   constructor(promptsDir?: string) {
@@ -74,7 +81,24 @@ export class ContextManager {
   }
 
   setCompactionThreshold(threshold: CompactionThreshold): void {
-    this.compactionThreshold = threshold;
+    this.compactionPolicy = normalizeCompactionPolicy({
+      ...this.compactionPolicy,
+      summarizeThreshold: threshold,
+    });
+  }
+
+  setCompactionPolicy(policy: Partial<CompactionPolicy>): void {
+    this.compactionPolicy = normalizeCompactionPolicy({
+      ...this.compactionPolicy,
+      ...policy,
+    });
+  }
+
+  setSummarizationPolicy(policy: Partial<SummarizationPolicy>): void {
+    this.summarizationPolicy = {
+      ...this.summarizationPolicy,
+      ...policy,
+    };
   }
 
   buildContext(opts: ContextBuildOpts, conversationHistory: Message[] = []): ContextPayload {
@@ -93,7 +117,7 @@ export class ContextManager {
       messagesSummarized: 0,
       currentCost: this.totalCost,
       sessionDurationMinutes: sessionMinutes,
-      compactionThreshold: this.compactionThreshold,
+      compactionThreshold: this.compactionPolicy.summarizeThreshold,
     };
 
     const identity = buildIdentityLayer(
@@ -183,37 +207,38 @@ export class ContextManager {
     const totalTokens = conversationHistory.reduce((sum, m) => sum + estimateTokens(m.content), 0);
     const percentUsed = (totalTokens / contextWindow) * 100;
 
-    if (percentUsed >= 95) {
+    if (percentUsed >= this.compactionPolicy.hardStopThreshold) {
       return {
-        threshold: 95,
+        threshold: this.compactionPolicy.hardStopThreshold,
         action: 'HARD_STOP',
         tokensUsed: totalTokens,
         tokensMax: contextWindow,
       };
     }
 
-    if (percentUsed >= 90) {
+    if (percentUsed >= this.compactionPolicy.handoffThreshold) {
       return {
-        threshold: 90,
+        threshold: this.compactionPolicy.handoffThreshold,
         action: 'FORCE_HANDOFF',
         tokensUsed: totalTokens,
         tokensMax: contextWindow,
       };
     }
 
-    if (percentUsed >= 80 && summarizationAdapter) {
-      const targetTokens = Math.floor(contextWindow * 0.5);
+    if (percentUsed >= this.compactionPolicy.summarizeThreshold && summarizationAdapter) {
+      const targetTokens = Math.floor(contextWindow * this.compactionPolicy.summaryTargetPercent);
       const result = await summarizeMessages(
         conversationHistory,
         targetTokens,
         summarizationAdapter,
         summarizationModel ?? 'gpt-4o-mini',
+        this.summarizationPolicy,
       );
 
       this.lastCompactionNotice = result.notice;
 
       return {
-        threshold: 80,
+        threshold: this.compactionPolicy.summarizeThreshold,
         action: 'AUTO_SUMMARIZE',
         tokensUsed: totalTokens,
         tokensMax: contextWindow,
@@ -221,9 +246,9 @@ export class ContextManager {
       };
     }
 
-    if (percentUsed >= 60) {
+    if (percentUsed >= this.compactionPolicy.checkpointThreshold) {
       return {
-        threshold: 60,
+        threshold: this.compactionPolicy.checkpointThreshold,
         action: 'CHECKPOINT_REMINDER',
         tokensUsed: totalTokens,
         tokensMax: contextWindow,

@@ -1,5 +1,10 @@
 import type { Message, ModelAdapter } from '../types.js';
 import { estimateTokens } from './token-counter.js';
+import {
+  DEFAULT_SUMMARIZATION_POLICY,
+  shouldPreserveVerbatim,
+  type SummarizationPolicy,
+} from './compaction-policy.js';
 
 export interface SummarizationResult {
   messages: Message[];
@@ -14,6 +19,7 @@ export async function summarizeMessages(
   targetTokens: number,
   adapter: ModelAdapter,
   model: string,
+  policy: SummarizationPolicy = DEFAULT_SUMMARIZATION_POLICY,
 ): Promise<SummarizationResult> {
   const currentTokens = messages.reduce((sum, m) => sum + estimateTokens(m.content), 0);
 
@@ -33,15 +39,10 @@ export async function summarizeMessages(
 
   for (let i = 0; i < messages.length; i++) {
     const msg = messages[i];
-    const isRecent = i >= messages.length - 5;
-    const isToolResult = msg.role === 'tool';
-    const isUrgent = msg.content.includes('[URGENT]') || msg.content.includes('[CRITICAL]');
-
-    if (isRecent || isToolResult || isUrgent) {
+    const preservation = shouldPreserveVerbatim(msg, i, messages.length, policy);
+    if (preservation.preserve) {
       preserved.push(msg);
-      if (isUrgent) preservedReasons.push('urgent message');
-      else if (isToolResult) preservedReasons.push('tool result');
-      else preservedReasons.push('recent message');
+      preservedReasons.push(preservation.reason ?? 'preserved');
     } else {
       toSummarize.push(msg);
     }
@@ -87,8 +88,8 @@ export async function summarizeMessages(
     '[COMPACTION NOTICE]',
     `Summarized ${toSummarize.length} messages into 1 summary block.`,
     `Tokens recovered: ${tokensRecovered.toLocaleString()}`,
-    `Preserved verbatim: ${preservedReasons.length} items (${[...new Set(preservedReasons)].join(', ')})`,
-    `Lost details: Early exploration messages, superseded approaches`,
+    `Preserved verbatim: ${preservedReasons.length} items (${[...new Set(preservedReasons)].join(', ') || 'none'})`,
+    'Lost details: intermediate tool output, exploratory debugging trails, superseded approaches',
   ].join('\n');
 
   return {
