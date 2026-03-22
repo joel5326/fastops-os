@@ -98,7 +98,13 @@ export class FastOpsEngine {
       this.tools,
       this.events,
       this.stateStore,
-      { ...opts?.dispatcherConfig, workingDirectory: this.workingDirectory },
+      {
+        ...opts?.dispatcherConfig,
+        workingDirectory: this.workingDirectory,
+        securityTier: config.securityTier,
+        allowElevatedBash: process.env.FASTOPS_BASH_ALLOW_ELEVATED === '1',
+        toolAuditDir: auditDir,
+      },
       this.middleware,
     );
   }

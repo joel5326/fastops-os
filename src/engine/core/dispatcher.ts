@@ -36,12 +36,17 @@ export interface DispatcherConfig {
   maxToolCalls: number;
   timeoutMs: number;
   workingDirectory: string;
+  securityTier?: 'development' | 'enterprise';
+  allowElevatedBash?: boolean;
+  toolAuditDir?: string;
 }
 
 const DEFAULT_CONFIG: DispatcherConfig = {
   maxToolCalls: 25,
   timeoutMs: 10 * 60 * 1000,
   workingDirectory: process.cwd(),
+  securityTier: 'development',
+  allowElevatedBash: false,
 };
 
 export class Dispatcher {
@@ -115,6 +120,7 @@ export class Dispatcher {
             modelId: session.modelId,
             provider: session.provider,
             model,
+            sessionId,
             currentTask: task.contractId ? {
               id: task.contractId,
               name: task.contractId,
@@ -218,6 +224,10 @@ export class Dispatcher {
               sessionId,
               modelId: session.modelId,
               workingDirectory: this.config.workingDirectory,
+              sandboxRoot: this.config.workingDirectory,
+              securityTier: this.config.securityTier ?? 'development',
+              allowElevatedBash: this.config.allowElevatedBash ?? false,
+              toolAuditDir: this.config.toolAuditDir,
             },
           );
 
