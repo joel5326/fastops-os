@@ -43,6 +43,10 @@ export class InMemoryCommsBus implements CommsBus {
     this.messages = [...messages];
   }
 
+  public setOnPersist(handler: (msg: CommsMessage) => void): void {
+    this.onPersist = handler;
+  }
+
   send(partial: Omit<CommsMessage, 'id' | 'ts'>): CommsMessage {
     const msg: CommsMessage = {
       ...partial,

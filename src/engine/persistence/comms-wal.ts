@@ -10,7 +10,6 @@ export interface CommsWALOptions {
 
 export class CommsWAL {
   private logPath: string;
-  private logStream: fs.WriteStream | null = null;
   
   constructor(opts?: CommsWALOptions) {
     this.logPath = opts?.logPath || path.join(process.cwd(), '.fastops', 'data', 'comms-bus.jsonl');
@@ -28,16 +27,12 @@ export class CommsWAL {
    * Appends a message to the Write-Ahead Log
    */
   public append(msg: CommsMessage): void {
-    if (!this.logStream) {
-      this.logStream = fs.createWriteStream(this.logPath, { flags: 'a', encoding: 'utf-8' });
-    }
-    
-    // We serialize the date as ISO string to safely write to JSONL
     const payload = JSON.stringify(msg);
-    // Write synchronous or stream? WAL is typically synchronous to guarantee durability before emitting event
-    // But fs.appendFileSync can be slow. For FOS OS, we'll start with appendFileSync for strict durability
-    // To optimize later we can use write streams with proper flush, but for now we want process-death safety
-    fs.appendFileSync(this.logPath, payload + '\n', { encoding: 'utf-8' });
+    try {
+      fs.appendFileSync(this.logPath, payload + '\n', { encoding: 'utf-8' });
+    } catch (e) {
+      console.error(`[CommsWAL] Failed to append message to WAL at ${this.logPath}`, e);
+    }
   }
 
   /**
@@ -85,10 +80,9 @@ export class CommsWAL {
       bus.loadHistory(messages);
     }
 
-    // Now set up the onPersist hook
-    (bus as any).onPersist = (msg: CommsMessage) => {
+    bus.setOnPersist((msg: CommsMessage) => {
       wal.append(msg);
-    };
+    });
 
     return wal;
   }
