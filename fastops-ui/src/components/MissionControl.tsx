@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { apiClient, type SessionInfo, type TeamMember, type MissionInfo } from '@/lib/api';
+import { apiClient, type SessionInfo, type MissionInfo, type ProductInfo } from '@/lib/api';
 import { getSocket } from '@/lib/ws';
 import {
   Crosshair,
@@ -30,11 +30,21 @@ interface ModelCard {
   status: 'active' | 'idle';
 }
 
-export default function MissionControl() {
+interface MissionControlProps {
+  selectedProductId?: string;
+  products?: ProductInfo[];
+}
+
+export default function MissionControl({
+  selectedProductId = 'all',
+  products = [],
+}: MissionControlProps) {
   const [models, setModels] = useState<ModelCard[]>([]);
   const [engineState, setEngineState] = useState<any>(null);
   const [events, setEvents] = useState<Array<{ type: string; data: any; ts: string }>>([]);
   const [missions, setMissions] = useState<MissionInfo[]>([]);
+  const [localProductFilter, setLocalProductFilter] = useState<string>('all');
+  const effectiveProductFilter = localProductFilter === 'all' ? selectedProductId : localProductFilter;
 
   const refresh = async () => {
     try {
@@ -45,7 +55,7 @@ export default function MissionControl() {
         apiClient.getMissions(),
       ]);
       setEngineState(state);
-      setMissions(missionsRes.missions || []);
+      setMissions(missionsRes || []);
 
       const cardMap = new Map<string, ModelCard>();
       for (const name of adapters.available) {
@@ -81,11 +91,15 @@ export default function MissionControl() {
   const totalMessages = models.reduce((sum, m) => sum + m.totalMessages, 0);
   const halted = engineState?.halted;
 
+  const filteredMissions = missions.filter((m) =>
+    effectiveProductFilter === 'all' ? true : m.productId === effectiveProductFilter,
+  );
+
   const missionsByStatus = {
-    blocked: missions.filter((m) => m.status === 'blocked'),
-    in_progress: missions.filter((m) => m.status === 'in_progress'),
-    open: missions.filter((m) => m.status === 'open'),
-    completed: missions.filter((m) => m.status === 'completed'),
+    blocked: filteredMissions.filter((m) => m.status === 'blocked'),
+    in_progress: filteredMissions.filter((m) => m.status === 'in_progress'),
+    open: filteredMissions.filter((m) => m.status === 'open'),
+    completed: filteredMissions.filter((m) => m.status === 'completed'),
   };
 
   const providerColors: Record<string, string> = {
@@ -106,6 +120,28 @@ export default function MissionControl() {
             </h1>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
+            <select
+              value={localProductFilter}
+              onChange={(e) => setLocalProductFilter(e.target.value)}
+              style={{
+                padding: '6px 10px',
+                background: 'var(--bg-surface)',
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-md)',
+                fontSize: 12,
+              }}
+              title="Filter missions by product"
+            >
+              <option value="all">
+                {selectedProductId === 'all' ? 'All products' : 'Use global product'}
+              </option>
+              {products.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
             <button
               onClick={refresh}
               style={{
@@ -228,7 +264,7 @@ export default function MissionControl() {
         <h2 style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>
           Mission Board
         </h2>
-        {missions.length === 0 ? (
+        {filteredMissions.length === 0 ? (
           <div className="card" style={{ padding: 32, textAlign: 'center' }}>
             <Target size={24} style={{ color: 'var(--text-muted)', margin: '0 auto 8px' }} />
             <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>No active missions.</div>
@@ -303,7 +339,7 @@ function MissionCard({ mission }: { mission: MissionInfo }) {
       borderLeft: `3px solid ${borderColor}`,
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, flex: 1 }}>{mission.title}</div>
+        <div style={{ fontSize: 13, fontWeight: 600, flex: 1 }}>{mission.title || mission.name || mission.id}</div>
         <span className={`badge status-${mission.status}`} style={{ flexShrink: 0, marginLeft: 8 }}>
           {mission.status.replace('_', ' ')}
         </span>

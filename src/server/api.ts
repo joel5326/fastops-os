@@ -494,6 +494,150 @@ export function createApiRouter(engine: FastOpsEngine): express.Router {
     res.json(alert);
   });
 
+  // ── Overwatch ──
+
+  router.get('/overwatch/state', (_req, res) => {
+    res.json(engine.overwatch.getState());
+  });
+
+  router.post('/overwatch/start', (_req, res) => {
+    engine.overwatch.start();
+    res.json({ active: true });
+  });
+
+  router.post('/overwatch/stop', (_req, res) => {
+    engine.overwatch.stop();
+    res.json({ active: false });
+  });
+
+  router.get('/overwatch/knowledge', (req, res) => {
+    const category = req.query.category as string | undefined;
+    const severity = req.query.severity as string | undefined;
+    let articles = engine.knowledgeStore.listAll();
+    if (category) {
+      articles = articles.filter((a) => a.category === category);
+    }
+    if (severity) {
+      const levels: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
+      const threshold = levels[severity] ?? 0;
+      articles = articles.filter((a) => (levels[a.severity] ?? 0) >= threshold);
+    }
+    res.json(articles);
+  });
+
+  router.get('/overwatch/knowledge/:id', (req, res) => {
+    const article = engine.knowledgeStore.get(req.params.id);
+    if (!article) {
+      res.status(404).json({ error: `Article not found: ${req.params.id}` });
+      return;
+    }
+    res.json(article);
+  });
+
+  router.post('/overwatch/knowledge', (req, res) => {
+    const { id, pattern, category, content, severity, triggerSignals } = req.body;
+    if (!id || !pattern || !category || !content || !severity || !triggerSignals) {
+      res.status(400).json({
+        error: 'id, pattern, category, content, severity, and triggerSignals are required',
+      });
+      return;
+    }
+    const validCategories = ['behavioral', 'failure-mode', 'reasoning-trap', 'intervention', 'cross-product'];
+    if (!validCategories.includes(category)) {
+      res.status(400).json({ error: `Invalid category. Must be one of: ${validCategories.join(', ')}` });
+      return;
+    }
+    const validSeverities = ['low', 'medium', 'high', 'critical'];
+    if (!validSeverities.includes(severity)) {
+      res.status(400).json({ error: `Invalid severity. Must be one of: ${validSeverities.join(', ')}` });
+      return;
+    }
+    if (!Array.isArray(triggerSignals) || triggerSignals.length === 0) {
+      res.status(400).json({ error: 'triggerSignals must be a non-empty array' });
+      return;
+    }
+    const now = new Date().toISOString();
+    engine.knowledgeStore.add({
+      id,
+      pattern,
+      category,
+      content,
+      severity,
+      interventionSuccessRate: req.body.interventionSuccessRate ?? 0,
+      sourceProducts: req.body.sourceProducts ?? [],
+      triggerSignals,
+      createdAt: now,
+      updatedAt: now,
+      dropCount: 0,
+      feedbackScore: 0,
+    });
+    res.json({ success: true, id });
+  });
+
+  router.post('/overwatch/scan', (req, res) => {
+    const { sessionId, modelId } = req.body;
+    if (!sessionId || !modelId) {
+      res.status(400).json({ error: 'sessionId and modelId are required' });
+      return;
+    }
+    const session = engine.sessions.get(sessionId);
+    if (!session) {
+      res.status(404).json({ error: `Session not found: ${sessionId}` });
+      return;
+    }
+    const result = engine.overwatch.scanSession(sessionId, modelId, session.messages);
+    res.json(result);
+  });
+
+  router.post('/overwatch/inject', (req, res) => {
+    const { match } = req.body;
+    if (!match || !match.articleId || !match.sessionId || !match.modelId) {
+      res.status(400).json({ error: 'match object with articleId, sessionId, and modelId is required' });
+      return;
+    }
+    const drop = engine.overwatch.injectDrop(match);
+    if (!drop) {
+      res.status(409).json({ error: 'Drop not injected — monitor inactive, cooldown, or max drops reached' });
+      return;
+    }
+    res.json(drop);
+  });
+
+  router.get('/overwatch/drops', (req, res) => {
+    const sessionId = req.query.sessionId as string | undefined;
+    const limit = parseInt(String(req.query.limit ?? '20'));
+    res.json(engine.overwatch.getRecentDrops(sessionId, limit));
+  });
+
+  router.post('/overwatch/drops/:id/feedback', (req, res) => {
+    const { accuracy, utility, delta } = req.body;
+    if (!accuracy || !utility) {
+      res.status(400).json({ error: 'accuracy and utility are required' });
+      return;
+    }
+    const validAccuracy = ['true', 'partial', 'false'];
+    if (!validAccuracy.includes(accuracy)) {
+      res.status(400).json({ error: `accuracy must be one of: ${validAccuracy.join(', ')}` });
+      return;
+    }
+    const validUtility = ['blocked-risk', 'helpful', 'noise'];
+    if (!validUtility.includes(utility)) {
+      res.status(400).json({ error: `utility must be one of: ${validUtility.join(', ')}` });
+      return;
+    }
+    const recorded = engine.overwatch.recordFeedback(req.params.id, {
+      accuracy,
+      utility,
+      delta: delta ?? '',
+      receivedAt: new Date().toISOString(),
+    });
+    if (!recorded) {
+      res.status(404).json({ error: `Drop not found: ${req.params.id}` });
+      return;
+    }
+    res.json({ success: true });
+  });
+
   // ── Subagents ──
 
   router.get('/subagents', (req, res) => {
@@ -602,6 +746,78 @@ export function createApiRouter(engine: FastOpsEngine): express.Router {
       return;
     }
     res.json({ callsign: sub.callsign, lifecycle: sub.lifecycle, terminatedAt: sub.terminatedAt });
+  });
+
+  // ── Agent Q&A ──
+
+  router.post('/agents/questions', (req, res) => {
+    const { from, to, question, context } = req.body ?? {};
+    if (!from || !to || !question) {
+      res.status(400).json({ error: 'from, to, and question are required' });
+      return;
+    }
+    try {
+      const created = engine.askAgentQuestion({
+        from: String(from),
+        to: String(to),
+        question: String(question),
+        context: context ? String(context) : undefined,
+      });
+      res.json(created);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(400).json({ error: msg });
+    }
+  });
+
+  router.get('/agents/questions/:id', (req, res) => {
+    const found = engine.getAgentQuestion(req.params.id);
+    if (!found) {
+      res.status(404).json({ error: `Question not found: ${req.params.id}` });
+      return;
+    }
+    res.json(found);
+  });
+
+  router.get('/agents/:agentId/inbox', (req, res) => {
+    const status = req.query.status as 'pending' | 'answered' | undefined;
+    if (status && status !== 'pending' && status !== 'answered') {
+      res.status(400).json({ error: 'status must be pending or answered' });
+      return;
+    }
+    const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : 50;
+    const items = engine.getAgentInbox(req.params.agentId, status, limit);
+    res.json(items);
+  });
+
+  router.get('/agents/:agentId/outbox', (req, res) => {
+    const status = req.query.status as 'pending' | 'answered' | undefined;
+    if (status && status !== 'pending' && status !== 'answered') {
+      res.status(400).json({ error: 'status must be pending or answered' });
+      return;
+    }
+    const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : 50;
+    const items = engine.getAgentOutbox(req.params.agentId, status, limit);
+    res.json(items);
+  });
+
+  router.post('/agents/questions/:id/answer', (req, res) => {
+    const { answer, answeredBy } = req.body ?? {};
+    if (!answer || !answeredBy) {
+      res.status(400).json({ error: 'answer and answeredBy are required' });
+      return;
+    }
+    try {
+      const updated = engine.answerAgentQuestion({
+        questionId: req.params.id,
+        answer: String(answer),
+        answeredBy: String(answeredBy),
+      });
+      res.json(updated);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(400).json({ error: msg });
+    }
   });
 
   // ── Products (Architecture Layer 2) ──

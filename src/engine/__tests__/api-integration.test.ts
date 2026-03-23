@@ -210,6 +210,117 @@ describe('Comms', () => {
   });
 });
 
+describe('Agent Q&A', () => {
+  it('POST /agents/questions creates a question', async () => {
+    const res = await api('/agents/questions', {
+      method: 'POST',
+      body: JSON.stringify({
+        from: 'gpt',
+        to: 'claude',
+        question: 'Can you review this patch?',
+        context: 'Patch ID: P-123',
+      }),
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.id).toBeTruthy();
+    expect(body.from).toBe('gpt');
+    expect(body.to).toBe('claude');
+    expect(body.status).toBe('pending');
+  });
+
+  it('GET /agents/:agentId/inbox returns pending questions', async () => {
+    const create = await api('/agents/questions', {
+      method: 'POST',
+      body: JSON.stringify({
+        from: 'gemini',
+        to: 'gpt',
+        question: 'What is the QC verdict?',
+      }),
+    });
+    expect(create.status).toBe(200);
+
+    const res = await api('/agents/gpt/inbox?status=pending');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(Array.isArray(body)).toBe(true);
+    expect(body.some((q: { to: string; status: string }) => q.to === 'gpt' && q.status === 'pending')).toBe(true);
+  });
+
+  it('POST /agents/questions/:id/answer answers a question', async () => {
+    const createRes = await api('/agents/questions', {
+      method: 'POST',
+      body: JSON.stringify({
+        from: 'gpt',
+        to: 'kimi',
+        question: 'Can you validate the WAL changes?',
+      }),
+    });
+    const created = await createRes.json();
+
+    const answerRes = await api(`/agents/questions/${created.id}/answer`, {
+      method: 'POST',
+      body: JSON.stringify({
+        answeredBy: 'kimi',
+        answer: 'Validated. All tests pass.',
+      }),
+    });
+    expect(answerRes.status).toBe(200);
+    const answered = await answerRes.json();
+    expect(answered.status).toBe('answered');
+    expect(answered.answeredBy).toBe('kimi');
+    expect(answered.answer).toContain('Validated');
+  });
+
+  it('POST /agents/questions/:id/answer rejects spoofed answeredBy', async () => {
+    const createRes = await api('/agents/questions', {
+      method: 'POST',
+      body: JSON.stringify({
+        from: 'gpt',
+        to: 'kimi',
+        question: 'Who are you?',
+      }),
+    });
+    const created = await createRes.json();
+
+    const answerRes = await api(`/agents/questions/${created.id}/answer`, {
+      method: 'POST',
+      body: JSON.stringify({
+        answeredBy: 'claude', // Should be kimi
+        answer: 'I am Claude.',
+      }),
+    });
+    expect(answerRes.status).toBe(400);
+    const errorBody = await answerRes.json();
+    expect(errorBody.error).toContain('Auth failed');
+  });
+
+  it('GET /agents/:agentId/outbox returns answered questions', async () => {
+    const createRes = await api('/agents/questions', {
+      method: 'POST',
+      body: JSON.stringify({
+        from: 'claude',
+        to: 'gemini',
+        question: 'Can you run end-to-end validation?',
+      }),
+    });
+    const created = await createRes.json();
+    await api(`/agents/questions/${created.id}/answer`, {
+      method: 'POST',
+      body: JSON.stringify({
+        answeredBy: 'gemini',
+        answer: 'Done, validation passed.',
+      }),
+    });
+
+    const outboxRes = await api('/agents/claude/outbox?status=answered');
+    expect(outboxRes.status).toBe(200);
+    const outbox = await outboxRes.json();
+    expect(Array.isArray(outbox)).toBe(true);
+    expect(outbox.some((q: { from: string; status: string }) => q.from === 'claude' && q.status === 'answered')).toBe(true);
+  });
+});
+
 describe('Contract Lifecycle via API', () => {
   it('GET /contracts returns empty list initially', async () => {
     const res = await api('/contracts');

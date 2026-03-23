@@ -20,7 +20,7 @@ import ContractsView from '@/components/ContractsView';
 import CommsView from '@/components/CommsView';
 import TeamPanel from '@/components/TeamPanel';
 import SettingsPanel from '@/components/SettingsPanel';
-import { apiClient } from '@/lib/api';
+import { apiClient, type ProductInfo } from '@/lib/api';
 import CommandPalette, { type CommandAction } from '@/components/CommandPalette';
 
 type View = 'chat' | 'mission-control' | 'contracts' | 'comms' | 'team' | 'settings';
@@ -38,18 +38,29 @@ export default function Home() {
   const [engineStatus, setEngineStatus] = useState<'online' | 'offline' | 'connecting'>('connecting');
   const [adapterCount, setAdapterCount] = useState(0);
   const [commandOpen, setCommandOpen] = useState(false);
+  const [products, setProducts] = useState<ProductInfo[]>([]);
+  const [selectedProductId, setSelectedProductId] = useState<string>('all');
 
   const check = useCallback(async () => {
     try {
-      const [health, adapters] = await Promise.all([
+      const [health, adapters, productList] = await Promise.all([
         apiClient.health(),
         apiClient.getAdapters(),
+        apiClient.getProducts().catch(() => []),
       ]);
       setEngineStatus(health.running ? 'online' : 'offline');
       setAdapterCount(adapters.available.length);
+      setProducts(productList);
+      setSelectedProductId((prev) => {
+        if (prev === 'all') return prev;
+        const stillExists = productList.some((p) => p.id === prev);
+        return stillExists ? prev : 'all';
+      });
     } catch {
       setEngineStatus('offline');
       setAdapterCount(0);
+      setProducts([]);
+      setSelectedProductId('all');
     }
   }, []);
 
@@ -245,6 +256,28 @@ export default function Home() {
             <span>{activeView === 'settings' ? 'Settings' : NAV_ITEMS.find((n) => n.id === activeView)?.label}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span>Product</span>
+              <select
+                value={selectedProductId}
+                onChange={(e) => setSelectedProductId(e.target.value)}
+                style={{
+                  background: 'var(--bg-surface)',
+                  color: 'var(--text-secondary)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 6,
+                  fontSize: 11,
+                  padding: '2px 6px',
+                }}
+              >
+                <option value="all">All products</option>
+                {products.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.name}
+                  </option>
+                ))}
+              </select>
+            </label>
             <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <Circle size={6} fill={statusColor} color={statusColor} />
               {engineStatus === 'online' ? `${adapterCount} providers` : engineStatus}
@@ -255,10 +288,12 @@ export default function Home() {
         {/* View content */}
         <div style={{ flex: 1, overflow: 'hidden' }}>
           {activeView === 'chat' && <ChatView />}
-          {activeView === 'mission-control' && <MissionControl />}
+          {activeView === 'mission-control' && (
+            <MissionControl selectedProductId={selectedProductId} products={products} />
+          )}
           {activeView === 'contracts' && <ContractsView />}
           {activeView === 'comms' && <CommsView />}
-          {activeView === 'team' && <TeamPanel />}
+          {activeView === 'team' && <TeamPanel selectedProductId={selectedProductId} />}
           {activeView === 'settings' && <SettingsPanel />}
         </div>
       </main>

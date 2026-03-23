@@ -158,7 +158,9 @@ export class FastOpsEngine {
       } : undefined,
     );
 
-    this.questions = new AgentQuestionBus(this.events, this.comms);
+    this.questions = new AgentQuestionBus(this.events, this.comms, {
+      persistencePath: join(this.workingDirectory, '.fastops-engine', 'agent-questions.json'),
+    });
 
     this.tools = new ToolExecutor();
     this.registerBuiltInTools();
@@ -414,12 +416,12 @@ export class FastOpsEngine {
     return this.questions.getById(id);
   }
 
-  getAgentInbox(agentId: string, status?: AgentQuestionStatus): AgentQuestion[] {
-    return this.questions.getInbox(agentId, status);
+  getAgentInbox(agentId: string, status?: AgentQuestionStatus, limit?: number): AgentQuestion[] {
+    return this.questions.getInbox(agentId, status, limit);
   }
 
-  getAgentOutbox(agentId: string, status?: AgentQuestionStatus): AgentQuestion[] {
-    return this.questions.getOutbox(agentId, status);
+  getAgentOutbox(agentId: string, status?: AgentQuestionStatus, limit?: number): AgentQuestion[] {
+    return this.questions.getOutbox(agentId, status, limit);
   }
 
   registerProduct(registration: ProductRegistration): LoadedProduct {

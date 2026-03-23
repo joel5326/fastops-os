@@ -1,32 +1,35 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { apiClient, type TeamMember, type SessionInfo } from '@/lib/api';
+import { apiClient, type TeamMember, type SessionInfo, type SubagentInfo } from '@/lib/api';
 import {
   User,
   Activity,
-  Clock,
-  Cpu,
-  DollarSign,
   RefreshCw,
   Circle,
   Shield,
+  Bot,
 } from 'lucide-react';
 
-export default function TeamPanel() {
+interface TeamPanelProps {
+  selectedProductId?: string;
+}
+
+export default function TeamPanel({ selectedProductId = 'all' }: TeamPanelProps) {
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [sessions, setSessions] = useState<SessionInfo[]>([]);
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [subagents, setSubagents] = useState<SubagentInfo[]>([]);
 
   const refresh = async () => {
     try {
-      const [teamRes, sessionRes] = await Promise.all([
+      const [teamRes, sessionRes, subagentRes] = await Promise.all([
         apiClient.getTeam(),
         apiClient.listSessions(),
+        apiClient.getSubagents().catch(() => []),
       ]);
       setTeam(teamRes.team || []);
       setSessions(sessionRes);
-      setLastRefresh(new Date());
+      setSubagents(subagentRes);
     } catch {}
   };
 
@@ -39,17 +42,28 @@ export default function TeamPanel() {
   const getModelSessions = (modelId: string) =>
     sessions.filter((s) => s.modelId === modelId);
 
-  const active = team.filter((t) => t.status === 'active');
-  const idle = team.filter((t) => t.status === 'idle');
-  const offline = team.filter((t) => t.status === 'offline');
+  const getStatusBucket = (status: string): 'active' | 'idle' | 'offline' => {
+    if (status === 'active' || status === 'building' || status === 'online' || status === 'working') return 'active';
+    if (status === 'idle') return 'idle';
+    return 'offline';
+  };
+
+  const active = team.filter((t) => getStatusBucket(t.status) === 'active');
+  const idle = team.filter((t) => getStatusBucket(t.status) === 'idle');
+  const offline = team.filter((t) => getStatusBucket(t.status) === 'offline');
 
   const renderMember = (member: TeamMember) => {
     const memberSessions = getModelSessions(member.modelId);
     const totalCost = memberSessions.reduce((s, sess) => s + (sess.costAccumulated || 0), 0);
-    const totalTokens = memberSessions.reduce((s, sess) => s + (sess.tokensBurned || 0), 0);
+    const memberSubagents = subagents.filter((sub) => {
+      const productMatches = selectedProductId === 'all' || sub.productId === selectedProductId;
+      return sub.parentModelId === member.modelId && sub.lifecycle !== 'terminated' && productMatches;
+    });
+    const contextUsage = member.contextUsagePercent ?? 0;
 
-    const statusColor = member.status === 'active' ? 'var(--green)'
-      : member.status === 'idle' ? 'var(--yellow)' : 'var(--text-muted)';
+    const bucket = getStatusBucket(member.status);
+    const statusColor = bucket === 'active' ? 'var(--green)'
+      : bucket === 'idle' ? 'var(--yellow)' : 'var(--text-muted)';
 
     return (
       <div key={member.modelId} className="card" style={{ padding: 16 }}>
@@ -70,7 +84,7 @@ export default function TeamPanel() {
               <div style={{ fontSize: 14, fontWeight: 600 }}>{member.modelId}</div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 1 }}>
                 <Circle size={6} fill={statusColor} color={statusColor} />
-                {member.status}
+                {bucket}
               </div>
             </div>
           </div>
@@ -101,11 +115,11 @@ export default function TeamPanel() {
             <div className="metric-label">Context</div>
             <div style={{ fontSize: 13, fontWeight: 600 }}>
               <span style={{
-                color: member.contextUsagePercent > 80 ? 'var(--red)'
-                  : member.contextUsagePercent > 50 ? 'var(--yellow)'
+                color: contextUsage > 80 ? 'var(--red)'
+                  : contextUsage > 50 ? 'var(--yellow)'
                     : 'var(--green)',
               }}>
-                {member.contextUsagePercent}%
+                {contextUsage}%
               </span>
             </div>
           </div>
@@ -119,6 +133,40 @@ export default function TeamPanel() {
           </div>
         </div>
 
+        {memberSubagents.length > 0 && (
+          <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>Subagents</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {memberSubagents.map((sub) => (
+                <div
+                  key={sub.id}
+                  style={{
+                    padding: '6px 8px',
+                    background: 'var(--bg-surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-sm)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 10,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                    <Bot size={12} style={{ color: 'var(--accent)' }} />
+                    <span style={{ fontSize: 12, fontWeight: 600 }}>{sub.callsign}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                      {sub.type}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                    {sub.lifecycle} · {sub.toolCallCount} tools
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Context usage bar */}
         <div style={{
           marginTop: 10,
@@ -129,9 +177,9 @@ export default function TeamPanel() {
         }}>
           <div style={{
             height: '100%',
-            width: `${Math.min(member.contextUsagePercent, 100)}%`,
-            background: member.contextUsagePercent > 80 ? 'var(--red)'
-              : member.contextUsagePercent > 50 ? 'var(--yellow)'
+            width: `${Math.min(contextUsage, 100)}%`,
+            background: contextUsage > 80 ? 'var(--red)'
+              : contextUsage > 50 ? 'var(--yellow)'
                 : 'var(--green)',
             borderRadius: 2,
             transition: 'width 300ms ease',

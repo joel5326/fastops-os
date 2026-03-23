@@ -73,11 +73,44 @@ export interface TeamMember {
 
 export interface MissionInfo {
   id: string;
-  title: string;
-  status: 'blocked' | 'in_progress' | 'open' | 'completed';
-  priority: string;
+  productId?: string;
+  title?: string;
+  name?: string;
+  status: string;
+  priority: string | number;
   owner?: string;
   blockedBy?: string[];
+}
+
+export interface ProductInfo {
+  id: string;
+  name: string;
+  version?: string;
+  active: boolean;
+  repoPath?: string;
+  missionCount?: number;
+  activeMissions?: number;
+}
+
+export interface SubagentInfo {
+  id: string;
+  callsign: string;
+  type: string;
+  persistence: 'ephemeral' | 'persistent';
+  lifecycle: 'spawning' | 'active' | 'idle' | 'terminated';
+  parentSessionId: string;
+  parentModelId: string;
+  modelId: string;
+  sessionId: string;
+  productId?: string;
+  missionId?: string;
+  commsChannel: string;
+  spawnedAt: string;
+  lastActiveAt: string;
+  terminatedAt?: string;
+  toolCallCount: number;
+  traceEntries: number;
+  maxIdleMs: number;
 }
 
 export interface CommsMessage {
@@ -128,7 +161,10 @@ export const apiClient = {
 
   getState: () => api<any>('/api/state'),
   getTeam: () => api<{ team: TeamMember[] }>('/api/team'),
-  getMissions: () => api<{ missions: MissionInfo[] }>('/api/missions'),
+  getMissions: () => api<MissionInfo[]>('/api/missions'),
+  getProducts: () => api<ProductInfo[]>('/api/products'),
+  getSubagents: () => api<SubagentInfo[]>('/api/subagents'),
+  getActiveSubagents: () => api<SubagentInfo[]>('/api/subagents/active'),
   killSwitch: () => api<{ halted: boolean }>('/api/kill-switch', { method: 'POST' }),
   releaseKillSwitch: () => api<{ halted: boolean }>('/api/kill-switch', { method: 'DELETE' }),
 };
