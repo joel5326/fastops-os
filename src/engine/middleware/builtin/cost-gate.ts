@@ -25,6 +25,14 @@ export class CostGateMiddleware implements Middleware {
     this.limits = { ...DEFAULT_LIMITS, ...limits };
   }
 
+  getLimits(): CostLimits {
+    return { ...this.limits };
+  }
+
+  setLimits(patch: Partial<CostLimits>): void {
+    this.limits = { ...this.limits, ...patch };
+  }
+
   recordCost(sessionId: string, cost: number): void {
     const current = this.sessionCosts.get(sessionId) ?? 0;
     this.sessionCosts.set(sessionId, current + cost);

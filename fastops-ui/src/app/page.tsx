@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   MessageSquare,
   Crosshair,
@@ -10,15 +10,20 @@ import {
   Settings,
   Zap,
   Circle,
+  Plus,
+  RefreshCw,
+  ShieldAlert,
 } from 'lucide-react';
 import ChatView from '@/components/ChatView';
 import MissionControl from '@/components/MissionControl';
 import ContractsView from '@/components/ContractsView';
 import CommsView from '@/components/CommsView';
 import TeamPanel from '@/components/TeamPanel';
+import SettingsPanel from '@/components/SettingsPanel';
 import { apiClient } from '@/lib/api';
+import CommandPalette, { type CommandAction } from '@/components/CommandPalette';
 
-type View = 'chat' | 'mission-control' | 'contracts' | 'comms' | 'team';
+type View = 'chat' | 'mission-control' | 'contracts' | 'comms' | 'team' | 'settings';
 
 const NAV_ITEMS: Array<{ id: View; label: string; icon: typeof MessageSquare }> = [
   { id: 'chat', label: 'Chat', icon: MessageSquare },
@@ -32,25 +37,119 @@ export default function Home() {
   const [activeView, setActiveView] = useState<View>('chat');
   const [engineStatus, setEngineStatus] = useState<'online' | 'offline' | 'connecting'>('connecting');
   const [adapterCount, setAdapterCount] = useState(0);
+  const [commandOpen, setCommandOpen] = useState(false);
+
+  const check = useCallback(async () => {
+    try {
+      const [health, adapters] = await Promise.all([
+        apiClient.health(),
+        apiClient.getAdapters(),
+      ]);
+      setEngineStatus(health.running ? 'online' : 'offline');
+      setAdapterCount(adapters.available.length);
+    } catch {
+      setEngineStatus('offline');
+      setAdapterCount(0);
+    }
+  }, []);
 
   useEffect(() => {
-    const check = async () => {
-      try {
-        const [health, adapters] = await Promise.all([
-          apiClient.health(),
-          apiClient.getAdapters(),
-        ]);
-        setEngineStatus(health.running ? 'online' : 'offline');
-        setAdapterCount(adapters.available.length);
-      } catch {
-        setEngineStatus('offline');
-        setAdapterCount(0);
-      }
-    };
     check();
     const interval = setInterval(check, 10000);
     return () => clearInterval(interval);
+  }, [check]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandOpen((v) => !v);
+      } else if (e.key === 'Escape') {
+        setCommandOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
+
+  const commandActions = useMemo<CommandAction[]>(() => {
+    return [
+      {
+        id: 'new-session',
+        label: 'New Session',
+        subtitle: 'Create a chat session with default provider',
+        icon: Plus,
+        keywords: ['chat', 'session', 'new'],
+        run: async () => {
+          setActiveView('chat');
+          window.dispatchEvent(new CustomEvent('fastops:new-session'));
+        },
+      },
+      {
+        id: 'kill-switch',
+        label: 'Kill Switch',
+        subtitle: 'Halt the engine immediately',
+        icon: ShieldAlert,
+        keywords: ['halt', 'stop', 'engine', 'safety'],
+        run: async () => {
+          await apiClient.killSwitch();
+          await check();
+        },
+      },
+      {
+        id: 'refresh',
+        label: 'Refresh',
+        subtitle: 'Refresh engine status and adapter count',
+        icon: RefreshCw,
+        keywords: ['reload', 'status', 'adapters'],
+        run: async () => {
+          await check();
+        },
+      },
+      {
+        id: 'view-chat',
+        label: 'Switch to Chat',
+        icon: MessageSquare,
+        keywords: ['view', 'chat'],
+        run: () => setActiveView('chat'),
+      },
+      {
+        id: 'view-mission-control',
+        label: 'Switch to Mission Control',
+        icon: Crosshair,
+        keywords: ['view', 'mission', 'control'],
+        run: () => setActiveView('mission-control'),
+      },
+      {
+        id: 'view-contracts',
+        label: 'Switch to Contracts',
+        icon: FileCheck,
+        keywords: ['view', 'contracts'],
+        run: () => setActiveView('contracts'),
+      },
+      {
+        id: 'view-comms',
+        label: 'Switch to Comms',
+        icon: Radio,
+        keywords: ['view', 'comms', 'messages'],
+        run: () => setActiveView('comms'),
+      },
+      {
+        id: 'view-team',
+        label: 'Switch to Team',
+        icon: Users,
+        keywords: ['view', 'team', 'roster'],
+        run: () => setActiveView('team'),
+      },
+      {
+        id: 'view-settings',
+        label: 'Switch to Settings',
+        icon: Settings,
+        keywords: ['view', 'settings', 'preferences', 'config'],
+        run: () => setActiveView('settings'),
+      },
+    ];
+  }, [check]);
 
   const statusColor = engineStatus === 'online'
     ? 'var(--green)'
@@ -114,7 +213,12 @@ export default function Home() {
               color={statusColor}
             />
           </button>
-          <button className="activity-btn" title="Settings">
+          <button
+            type="button"
+            className={`activity-btn${activeView === 'settings' ? ' active' : ''}`}
+            title="Settings"
+            onClick={() => setActiveView('settings')}
+          >
             <Settings size={18} strokeWidth={1.5} />
           </button>
         </div>
@@ -138,7 +242,7 @@ export default function Home() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>FASTOPS OS</span>
             <span style={{ color: 'var(--border)' }}>|</span>
-            <span>{NAV_ITEMS.find((n) => n.id === activeView)?.label}</span>
+            <span>{activeView === 'settings' ? 'Settings' : NAV_ITEMS.find((n) => n.id === activeView)?.label}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -155,8 +259,14 @@ export default function Home() {
           {activeView === 'contracts' && <ContractsView />}
           {activeView === 'comms' && <CommsView />}
           {activeView === 'team' && <TeamPanel />}
+          {activeView === 'settings' && <SettingsPanel />}
         </div>
       </main>
+      <CommandPalette
+        open={commandOpen}
+        onClose={() => setCommandOpen(false)}
+        actions={commandActions}
+      />
     </div>
   );
 }

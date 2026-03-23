@@ -45,6 +45,24 @@ export interface AdapterInfo {
   models: Array<{ provider: string; model: string }>;
 }
 
+export interface CostLimits {
+  perSessionLimit: number;
+  perHourLimit: number;
+  totalLimit: number;
+}
+
+export interface EngineSettings {
+  securityTier: string;
+  adapters: AdapterInfo;
+  halted: boolean;
+  costLimits: CostLimits;
+  costUsage: {
+    hourly: number;
+    total: number;
+    sessions: Record<string, number>;
+  };
+}
+
 export interface TeamMember {
   modelId: string;
   status: 'active' | 'idle' | 'offline';
@@ -91,6 +109,14 @@ export const apiClient = {
   getContract: (id: string) => api<ContractInfo>(`/api/contracts/${id}`),
 
   getAdapters: () => api<AdapterInfo>('/api/adapters'),
+
+  getEngineSettings: () => api<EngineSettings>('/api/engine-settings'),
+
+  updateCostLimits: (limits: Partial<CostLimits>) =>
+    api<{ success: boolean; costLimits: CostLimits }>('/api/cost-limits', {
+      method: 'PUT',
+      body: JSON.stringify(limits),
+    }),
 
   getComms: (channel: string, limit = 50) => api<CommsMessage[]>(`/api/comms/${channel}?limit=${limit}`),
   listChannels: () => api<{ channels: string[] }>('/api/comms'),

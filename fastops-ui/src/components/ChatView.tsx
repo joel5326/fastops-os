@@ -36,6 +36,9 @@ interface ModelOption {
   display: string;
 }
 
+const LS_DEFAULT_PROVIDER = 'fastops.defaultProvider';
+const LS_DEFAULT_MODEL = 'fastops.defaultModel';
+
 export default function ChatView() {
   const [sessions, setSessions] = useState<SessionInfo[]>([]);
   const [activeSession, setActiveSession] = useState<string | null>(null);
@@ -56,12 +59,28 @@ export default function ChatView() {
         display: `${m.provider}/${m.model}`,
       }));
       setModelOptions(opts);
-      if (a.available.length > 0 && !a.available.includes(selectedProvider)) {
+      let saved: string | null = null;
+      try {
+        saved = typeof window !== 'undefined' ? localStorage.getItem(LS_DEFAULT_PROVIDER) : null;
+      } catch {
+        saved = null;
+      }
+      if (saved && a.available.includes(saved)) {
+        setSelectedProvider(saved);
+      } else if (a.available.length > 0 && !a.available.includes(selectedProvider)) {
         setSelectedProvider(a.available[0]);
       }
     }).catch(() => {});
     refreshSessions();
   }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(LS_DEFAULT_PROVIDER, selectedProvider);
+    } catch {
+      /* ignore */
+    }
+  }, [selectedProvider]);
 
   const refreshSessions = useCallback(async () => {
     try {
@@ -74,16 +93,33 @@ export default function ChatView() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const createSession = async () => {
+  const createSession = useCallback(async () => {
     try {
-      const session = await apiClient.createSession(selectedProvider);
+      let model: string | undefined;
+      try {
+        const raw = typeof window !== 'undefined' ? localStorage.getItem(LS_DEFAULT_MODEL) : null;
+        model = raw?.trim() || undefined;
+      } catch {
+        model = undefined;
+      }
+      const session = await apiClient.createSession(selectedProvider, model);
       setActiveSession(session.id);
       setMessages([]);
       await refreshSessions();
     } catch (err: any) {
       console.error('Failed to create session:', err.message);
     }
-  };
+  }, [refreshSessions, selectedProvider]);
+
+  useEffect(() => {
+    const handler = () => {
+      void createSession();
+    };
+    window.addEventListener('fastops:new-session', handler as EventListener);
+    return () => {
+      window.removeEventListener('fastops:new-session', handler as EventListener);
+    };
+  }, [createSession]);
 
   const deleteSession = async (id: string) => {
     try {

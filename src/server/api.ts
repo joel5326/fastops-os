@@ -204,6 +204,78 @@ export function createApiRouter(engine: FastOpsEngine): express.Router {
     }
   });
 
+  router.get('/engine-settings', (_req, res) => {
+    try {
+      const registry = (engine as unknown as {
+        registry: {
+          listAvailable: () => string[];
+          listAllModels: () => Array<{ provider: string; model: string }>;
+        };
+      }).registry;
+      const costs = engine.costGate.getCosts();
+      const sessions: Record<string, number> = {};
+      costs.session.forEach((v, k) => {
+        sessions[k] = v;
+      });
+      res.json({
+        securityTier: engine.securityTier,
+        adapters: {
+          available: registry.listAvailable(),
+          models: registry.listAllModels(),
+        },
+        halted: engine.stateStore.get().halt,
+        costLimits: engine.costGate.getLimits(),
+        costUsage: {
+          hourly: costs.hourly,
+          total: costs.total,
+          sessions,
+        },
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(500).json({ error: msg });
+    }
+  });
+
+  router.put('/cost-limits', (req, res) => {
+    const { perSessionLimit, perHourLimit, totalLimit } = req.body ?? {};
+    const patch: { perSessionLimit?: number; perHourLimit?: number; totalLimit?: number } = {};
+
+    const parseLimit = (v: unknown, name: string): number | null => {
+      if (v === undefined) return null;
+      const n = Number(v);
+      if (!Number.isFinite(n) || n < 0) {
+        res.status(400).json({ error: `${name} must be a non-negative number` });
+        return -1;
+      }
+      return n;
+    };
+
+    if (perSessionLimit !== undefined) {
+      const n = parseLimit(perSessionLimit, 'perSessionLimit');
+      if (n === -1) return;
+      if (n !== null) patch.perSessionLimit = n;
+    }
+    if (perHourLimit !== undefined) {
+      const n = parseLimit(perHourLimit, 'perHourLimit');
+      if (n === -1) return;
+      if (n !== null) patch.perHourLimit = n;
+    }
+    if (totalLimit !== undefined) {
+      const n = parseLimit(totalLimit, 'totalLimit');
+      if (n === -1) return;
+      if (n !== null) patch.totalLimit = n;
+    }
+
+    if (Object.keys(patch).length === 0) {
+      res.status(400).json({ error: 'Provide at least one of perSessionLimit, perHourLimit, totalLimit' });
+      return;
+    }
+
+    engine.costGate.setLimits(patch);
+    res.json({ success: true, costLimits: engine.costGate.getLimits() });
+  });
+
   router.post('/comms/send', (req, res) => {
     const { channel = 'general', content, from = 'joel' } = req.body;
     if (!content) {
