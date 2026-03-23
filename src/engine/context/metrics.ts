@@ -51,11 +51,8 @@ export interface MetricsHistoryEntry {
 export class ContextMetricsCalculator {
   private history: MetricsHistoryEntry[] = [];
   private readonly maxHistoryLength = 20;
-  private sessionStartTime: number;
 
-  constructor(private sessionId: string, private totalCapacity: number) {
-    this.sessionStartTime = Date.now();
-  }
+  constructor(private sessionId: string, private totalCapacity: number) {}
 
   /**
    * Record current metrics for history tracking

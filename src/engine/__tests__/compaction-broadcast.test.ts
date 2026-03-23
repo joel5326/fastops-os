@@ -1,13 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { CompactionBroadcaster } from '../context/compaction-broadcast.js';
-import { ContextManager } from '../context/manager.js';
 import { EventBus } from '../core/event-bus.js';
 
 function createBroadcaster() {
   const events = new EventBus();
-  const contextManager = new ContextManager();
-  const broadcaster = new CompactionBroadcaster(events, contextManager);
-  return { events, contextManager, broadcaster };
+  const broadcaster = new CompactionBroadcaster(events);
+  return { events, broadcaster };
 }
 
 describe('CompactionBroadcaster', () => {

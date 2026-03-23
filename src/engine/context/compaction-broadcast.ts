@@ -1,5 +1,4 @@
 import type { EventBus } from '../core/event-bus.js';
-import type { ContextManager } from './manager.js';
 
 export interface CompactionAlert {
   sessionId: string;
@@ -11,13 +10,11 @@ export interface CompactionAlert {
 
 export class CompactionBroadcaster {
   private events: EventBus;
-  private contextManager: ContextManager;
   private alerts: CompactionAlert[] = [];
   private teardowns: Array<() => void> = [];
 
-  constructor(events: EventBus, contextManager: ContextManager) {
+  constructor(events: EventBus) {
     this.events = events;
-    this.contextManager = contextManager;
   }
 
   wire(): void {

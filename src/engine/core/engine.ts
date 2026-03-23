@@ -157,7 +157,7 @@ export class FastOpsEngine {
     });
     this.triggerWiring.wireAll();
 
-    this.compactionBroadcaster = new CompactionBroadcaster(this.events, this.contextManager);
+    this.compactionBroadcaster = new CompactionBroadcaster(this.events);
     this.compactionBroadcaster.wire();
 
     this.events.on('compaction.completed', (...args: unknown[]) => {
