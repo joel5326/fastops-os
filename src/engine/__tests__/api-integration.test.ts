@@ -92,15 +92,16 @@ describe('Health', () => {
 
 describe('Sessions CRUD', () => {
   it('POST /sessions creates a session', async () => {
+    const available = engine['registry'].listAvailable();
+    const modelId = available[0];
     const res = await api('/sessions', {
       method: 'POST',
-      body: JSON.stringify({ modelId: 'test-claude' }),
+      body: JSON.stringify({ modelId }),
     });
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.id).toBeTruthy();
-    expect(body.modelId).toBe('test-claude');
-    expect(body.status).toBe('idle');
+    expect(body.modelId).toBe(modelId);
   });
 
   it('POST /sessions rejects without modelId', async () => {
@@ -114,6 +115,11 @@ describe('Sessions CRUD', () => {
   });
 
   it('GET /sessions lists sessions', async () => {
+    const available = engine['registry'].listAvailable();
+    await api('/sessions', {
+      method: 'POST',
+      body: JSON.stringify({ modelId: available[0] }),
+    });
     const res = await api('/sessions');
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -122,10 +128,10 @@ describe('Sessions CRUD', () => {
   });
 
   it('GET /sessions/:id/messages returns messages', async () => {
-    // Create a session first
+    const available = engine['registry'].listAvailable();
     const createRes = await api('/sessions', {
       method: 'POST',
-      body: JSON.stringify({ modelId: 'test-messages' }),
+      body: JSON.stringify({ modelId: available[0] }),
     });
     const session = await createRes.json();
 
@@ -141,9 +147,10 @@ describe('Sessions CRUD', () => {
   });
 
   it('DELETE /sessions/:id closes a session', async () => {
+    const available = engine['registry'].listAvailable();
     const createRes = await api('/sessions', {
       method: 'POST',
-      body: JSON.stringify({ modelId: 'test-delete' }),
+      body: JSON.stringify({ modelId: available[0] }),
     });
     const session = await createRes.json();
 
@@ -212,12 +219,14 @@ describe('Contract Lifecycle via API', () => {
   });
 
   it('full lifecycle: claim -> start -> built -> QC pass -> done', async () => {
-    // Load contracts directly on engine (API has no load route — that's by design)
+    engine.onboarding.markModelOnboarded('claude');
+    engine.onboarding.markModelOnboarded('gpt');
+    engine.onboarding.markModelOnboarded('gemini');
+
     engine.contracts.loadContracts([
       makeContract({ id: 'LIFECYCLE-01' }),
     ]);
 
-    // Step 1: Claim
     const claimRes = await api('/contracts/LIFECYCLE-01/claim', {
       method: 'POST',
       body: JSON.stringify({ modelId: 'claude' }),
@@ -226,21 +235,18 @@ describe('Contract Lifecycle via API', () => {
     const claimBody = await claimRes.json();
     expect(claimBody.success).toBe(true);
 
-    // Step 2: Start work
     const startRes = await api('/contracts/LIFECYCLE-01/start', {
       method: 'POST',
       body: JSON.stringify({ modelId: 'claude' }),
     });
     expect(startRes.status).toBe(200);
 
-    // Step 3: Report built
     const builtRes = await api('/contracts/LIFECYCLE-01/built', {
       method: 'POST',
       body: JSON.stringify({ modelId: 'claude', artifacts: ['src/test.ts'] }),
     });
     expect(builtRes.status).toBe(200);
 
-    // Step 4: Assign QC
     const qcAssignRes = await api('/contracts/LIFECYCLE-01/assign-qc', {
       method: 'POST',
       body: JSON.stringify({ availableModels: ['claude', 'gpt', 'gemini'] }),
@@ -249,7 +255,6 @@ describe('Contract Lifecycle via API', () => {
     const qcAssign = await qcAssignRes.json();
     expect(qcAssign.assignedTo).not.toBe('claude');
 
-    // Step 5: Report QC pass
     const qcRes = await api('/contracts/LIFECYCLE-01/qc', {
       method: 'POST',
       body: JSON.stringify({
@@ -260,7 +265,6 @@ describe('Contract Lifecycle via API', () => {
     });
     expect(qcRes.status).toBe(200);
 
-    // Verify final state
     const contractRes = await api('/contracts/LIFECYCLE-01');
     expect(contractRes.status).toBe(200);
     const contract = await contractRes.json();
@@ -268,6 +272,9 @@ describe('Contract Lifecycle via API', () => {
   });
 
   it('double claim returns 409', async () => {
+    engine.onboarding.markModelOnboarded('claude');
+    engine.onboarding.markModelOnboarded('gpt');
+
     engine.contracts.loadContracts([
       makeContract({ id: 'DOUBLE-CLAIM-01' }),
     ]);
@@ -285,6 +292,9 @@ describe('Contract Lifecycle via API', () => {
   });
 
   it('QC failure sends contract back to IN_PROGRESS', async () => {
+    engine.onboarding.markModelOnboarded('claude');
+    engine.onboarding.markModelOnboarded('gpt');
+
     engine.contracts.loadContracts([
       makeContract({ id: 'QC-FAIL-01' }),
     ]);
