@@ -31,6 +31,7 @@ import {
   CompactionEventLedger,
   detectPolicyDrift,
 } from '../persistence/compaction-event-ledger.js';
+import { CompactionArtifactStore } from '../persistence/compaction-artifact-store.js';
 
 export interface EngineOptions {
   workingDirectory?: string;
@@ -57,6 +58,7 @@ export class FastOpsEngine {
   readonly onboarding: OnboardingLoader;
   readonly compactionPolicyStore: CompactionPolicyStore;
   readonly compactionLedger: CompactionEventLedger;
+  readonly compactionArtifactStore: CompactionArtifactStore;
 
   private registry: AdapterRegistry;
   readonly securityTier: string;
@@ -89,6 +91,9 @@ export class FastOpsEngine {
     this.compactionLedger = new CompactionEventLedger(
       join(this.workingDirectory, '.fastops-engine', 'compaction-events.jsonl'),
     );
+    this.compactionArtifactStore = new CompactionArtifactStore({
+      baseDir: join(this.workingDirectory, '.fastops-engine', 'compaction-artifacts'),
+    });
 
     this.onboarding = new OnboardingLoader(this.workingDirectory, opts?.onboarding);
     this.contextManager.setOnboardingLoader(this.onboarding);
