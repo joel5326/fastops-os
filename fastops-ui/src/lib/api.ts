@@ -45,6 +45,23 @@ export interface AdapterInfo {
   models: Array<{ provider: string; model: string }>;
 }
 
+export interface TeamMember {
+  modelId: string;
+  status: 'active' | 'idle' | 'offline';
+  onboarded: boolean;
+  currentTask?: string;
+  contextUsagePercent: number;
+}
+
+export interface MissionInfo {
+  id: string;
+  title: string;
+  status: 'blocked' | 'in_progress' | 'open' | 'completed';
+  priority: string;
+  owner?: string;
+  blockedBy?: string[];
+}
+
 export interface CommsMessage {
   id: string;
   from: string;
@@ -84,6 +101,8 @@ export const apiClient = {
     }),
 
   getState: () => api<any>('/api/state'),
+  getTeam: () => api<{ team: TeamMember[] }>('/api/team'),
+  getMissions: () => api<{ missions: MissionInfo[] }>('/api/missions'),
   killSwitch: () => api<{ halted: boolean }>('/api/kill-switch', { method: 'POST' }),
   releaseKillSwitch: () => api<{ halted: boolean }>('/api/kill-switch', { method: 'DELETE' }),
 };
@@ -93,8 +112,53 @@ export async function streamMessage(
   content: string,
   onChunk: (text: string) => void,
   onDone: (result: any) => void,
+  onError?: (err: Error) => void,
 ): Promise<void> {
-  const result = await apiClient.sendMessage(sessionId, content);
-  onChunk(result.content);
-  onDone(result);
+  try {
+    const res = await fetch(`${BASE}/api/sessions/${sessionId}/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    });
+
+    if (!res.ok || !res.body) {
+      const result = await apiClient.sendMessage(sessionId, content);
+      onChunk(result.content);
+      onDone(result);
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6);
+        if (raw === '[DONE]') continue;
+        try {
+          const event = JSON.parse(raw);
+          if (event.type === 'delta' && event.delta) {
+            onChunk(event.delta);
+          } else if (event.type === 'complete') {
+            onDone(event);
+          }
+        } catch {}
+      }
+    }
+  } catch (err: any) {
+    if (onError) onError(err);
+    else {
+      const result = await apiClient.sendMessage(sessionId, content);
+      onChunk(result.content);
+      onDone(result);
+    }
+  }
 }

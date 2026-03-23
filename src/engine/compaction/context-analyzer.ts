@@ -9,11 +9,9 @@
 
 import {
   ContextItem,
-  ContextItemType,
   ContextAnalysis,
   TierAssignment,
   VerbatimItem,
-  ItemMetadata,
 } from './types.js';
 
 /**
@@ -287,8 +285,8 @@ export class ContextAnalyzer {
    * Generate human-readable reasoning for assignment
    */
   private generateReasoning(
-    item: ContextItem, 
-    scores: Record<string, number>, 
+    _item: ContextItem,
+    scores: Record<string, number>,
     tier: string
   ): string {
     const reasons: string[] = [];
@@ -317,15 +315,19 @@ export class ContextAnalyzer {
   /**
    * Convert analyzed items to VerbatimItem[] for preservation
    */
-  extractVerbatim(analyzed: ContextAnalysis): VerbatimItem[] {
+  extractVerbatim(analyzed: ContextAnalysis, originalItems: ContextItem[] = []): VerbatimItem[] {
     return analyzed.items
       .filter(i => i.tier === 'VERBATIM')
-      .map(i => ({
-        id: i.itemId,
-        type: i.itemType as any,
-        content: 'CONTENT_PLACEHOLDER', // Actual content retrieved from original item
-        metadata: {} as ItemMetadata, // Retrieved from original
-      }));
+      .map(i => {
+        const original = originalItems.find(o => o.id === i.itemId);
+        return {
+          id: i.itemId,
+          type: i.itemType,
+          content: original?.content ?? 'CONTENT_PLACEHOLDER',
+          metadata: original?.metadata ?? { isReferenced: false, ledToDecision: false, isReproducible: false, source: 'unknown' },
+          preservationReason: i.reasoning,
+        };
+      });
   }
 }
 

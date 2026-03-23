@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, statSync } from 'fs';
 import { join } from 'path';
 import { estimateTokens } from '../token-counter.js';
 
@@ -24,7 +24,7 @@ function loadModelPrompt(modelId: string, promptsDir: string): string {
   const filePath = join(promptsDir, `${modelId}.md`);
   if (!existsSync(filePath)) return '';
 
-  const stat = require('fs').statSync(filePath);
+  const stat = statSync(filePath);
   const cached = promptCache.get(modelId);
   if (cached && cached.mtime === stat.mtimeMs) {
     return cached.text;

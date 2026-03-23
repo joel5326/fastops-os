@@ -1,13 +1,14 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { dirname, resolve, isAbsolute } from 'path';
+import { dirname } from 'path';
 import type { ToolHandler } from './types.js';
+import { resolveSandboxedPath } from './path-policy.js';
 
-function resolvePath(filePath: string, workingDir: string): string {
-  return isAbsolute(filePath) ? filePath : resolve(workingDir, filePath);
+function resolvePath(filePath: string, context: { workingDirectory: string; sandboxRoot: string }): string {
+  return resolveSandboxedPath(String(filePath), context.workingDirectory, context.sandboxRoot);
 }
 
 export const readFile: ToolHandler = async (args, context) => {
-  const path = resolvePath(String(args.path), context.workingDirectory);
+  const path = resolvePath(String(args.path), context);
   if (!existsSync(path)) {
     throw new Error(`File not found: ${path}`);
   }
@@ -22,7 +23,7 @@ export const readFile: ToolHandler = async (args, context) => {
 };
 
 export const writeFile: ToolHandler = async (args, context) => {
-  const path = resolvePath(String(args.path), context.workingDirectory);
+  const path = resolvePath(String(args.path), context);
   const dir = dirname(path);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
@@ -33,7 +34,7 @@ export const writeFile: ToolHandler = async (args, context) => {
 };
 
 export const editFile: ToolHandler = async (args, context) => {
-  const path = resolvePath(String(args.path), context.workingDirectory);
+  const path = resolvePath(String(args.path), context);
   if (!existsSync(path)) {
     throw new Error(`File not found: ${path}`);
   }

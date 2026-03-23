@@ -1,0 +1,40 @@
+{
+  "id": "session-2f2be1ac",
+  "modelId": "google",
+  "provider": "google",
+  "model": "gemini-2.0-flash",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Testing disk persistence"
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "toolCalls": [
+        {
+          "id": "",
+          "name": "comms_send",
+          "arguments": "{\"content\":\"Gemini online. Testing disk persistence. Over.\",\"channel\":\"general\"}"
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "Message sent: 1774273428123-4d047c",
+      "toolCallId": "",
+      "name": "comms_send"
+    },
+    {
+      "role": "assistant",
+      "content": "Okay, I've sent a message to the \"general\" channel to indicate that I'm online and testing disk persistence.\n"
+    }
+  ],
+  "status": "idle",
+  "tokensBurned": 2540,
+  "costAccumulated": 0.0002672,
+  "toolCallCount": 1,
+  "createdAt": "2026-03-23T13:43:47.210Z",
+  "lastActiveAt": "2026-03-23T13:43:48.792Z",
+  "maxMessages": 50
+}

@@ -203,6 +203,7 @@ export class WeightExtractor {
       activeUncertainties: this.extractUncertainties(messages),
       pendingQuestions: this.extractQuestions(messages),
       emotionalTrajectory: this.inferEmotionalTrajectory(messages),
+      perspectiveShifts: [],
     };
   }
 
@@ -442,6 +443,7 @@ export class HaikuTrailingWindowPlugin implements WeightExtractionPlugin {
         activeUncertainties: uncertainties,
         pendingQuestions: [...alternatives, ...disagreements],
         emotionalTrajectory: 'STABLE',
+        perspectiveShifts: [],
       },
       compressedTokens: Math.floor(rawTokens * 0.6), // Aggressive compression
       rawTokens,

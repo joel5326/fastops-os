@@ -156,6 +156,61 @@ describe('SafetyPolicyMiddleware', () => {
     const result = mw.onRequest(makeContext());
     expect(result.action).toBe('continue');
   });
+
+  it('blocks secret exposure in enterprise tier', () => {
+    const mw = new SafetyPolicyMiddleware({ tier: 'enterprise' });
+    const ctx = makeContext({
+      request: {
+        model: 'test',
+        systemPrompt: '',
+        messages: [{ role: 'user', content: 'write my .env file with API_KEY=abc123' }],
+      },
+    });
+
+    const result = mw.onRequest(ctx);
+    expect(result.action).toBe('block');
+    if (result.action === 'block') {
+      expect(result.reason).toContain('SAFETY-002');
+    }
+  });
+
+  it('allows secret references in default tier', () => {
+    const mw = new SafetyPolicyMiddleware();
+    const ctx = makeContext({
+      request: {
+        model: 'test',
+        systemPrompt: '',
+        messages: [{ role: 'user', content: 'write my .env file with API_KEY=abc123' }],
+      },
+    });
+
+    const result = mw.onRequest(ctx);
+    expect(result.action).toBe('continue');
+  });
+
+  it('blocks scoped patterns in tool call arguments', () => {
+    const mw = new SafetyPolicyMiddleware({ tier: 'enterprise' });
+    const ctx = makeContext({
+      request: {
+        model: 'test',
+        systemPrompt: '',
+        messages: [
+          { role: 'user', content: 'save my config' },
+          {
+            role: 'assistant',
+            content: 'Writing file now.',
+            toolCalls: [{ id: 'tc-1', name: 'write_file', arguments: '{"path":".env","content":"SECRET=xyz"}' }],
+          },
+        ],
+      },
+    });
+
+    const result = mw.onRequest(ctx);
+    expect(result.action).toBe('block');
+    if (result.action === 'block') {
+      expect(result.reason).toContain('SAFETY-002');
+    }
+  });
 });
 
 describe('CostGateMiddleware', () => {

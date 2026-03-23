@@ -32,6 +32,10 @@ export interface ToolContext {
   securityTier?: EngineSecurityTier;
   /** FASTOPS_BASH_ALLOW_ELEVATED=1 — allow unrestricted bash in enterprise. */
   allowElevatedBash?: boolean;
+  /** FASTOPS_BASH_ALLOW_WRITE=1 — allow write_restricted when enterprise strict mode is on. */
+  allowWriteBash?: boolean;
+  /** FASTOPS_ENTERPRISE_BASH_STRICT=1 — block write_restricted in enterprise unless allowWrite. */
+  enterpriseBashStrict?: boolean;
   /** Append-only tool audit JSONL directory (e.g. .fastops-engine/audit). */
   toolAuditDir?: string;
 }

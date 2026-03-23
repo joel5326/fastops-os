@@ -26,15 +26,20 @@ export function createApiRouter(engine: FastOpsEngine): express.Router {
   });
 
   router.post('/sessions', (req, res) => {
-    const { modelId, model } = req.body;
+    const { modelId, model, sessionId } = req.body;
     if (!modelId) {
       res.status(400).json({ error: 'modelId is required' });
       return;
     }
 
     try {
-      const session = engine.createSession(modelId, { model });
-      res.json({ id: session.id, modelId: session.modelId, status: session.status });
+      const session = engine.createSession(modelId, { model, sessionId });
+      res.json({
+        id: session.id,
+        modelId: session.modelId,
+        status: session.status,
+        resumed: !!sessionId,
+      });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       res.status(400).json({ error: msg });
@@ -70,6 +75,98 @@ export function createApiRouter(engine: FastOpsEngine): express.Router {
       const msg = err instanceof Error ? err.message : String(err);
       res.status(500).json({ error: msg });
     }
+  });
+
+  router.post('/sessions/:id/stream', async (req, res) => {
+    const { id } = req.params;
+    const { content, type = 'freeform', contractId } = req.body;
+
+    if (!content) {
+      res.status(400).json({ error: 'content is required' });
+      return;
+    }
+
+    // Set up SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders();
+
+    try {
+      const stream = engine.dispatchStream(id, {
+        type,
+        contractId,
+        prompt: content,
+      });
+
+      for await (const event of stream) {
+        if (res.destroyed) break;
+        res.write(`data: ${JSON.stringify(event)}\n\n`);
+      }
+
+      res.write('data: [DONE]\n\n');
+      res.end();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (!res.destroyed) {
+        res.write(`data: ${JSON.stringify({ type: 'error', error: msg })}\n\n`);
+        res.end();
+      }
+    }
+  });
+
+  router.post('/onboard', (req, res) => {
+    const { modelId } = req.body;
+    if (!modelId) {
+      res.status(400).json({ error: 'modelId is required' });
+      return;
+    }
+    const result = engine.completeOnboarding(String(modelId));
+    res.json(result);
+  });
+
+  router.get('/onboarding/status/:sessionId', (req, res) => {
+    const status = engine.onboarding.getStatus(req.params.sessionId);
+    if (!status) {
+      res.status(404).json({ error: 'Session not found or not initialized' });
+      return;
+    }
+    res.json(status);
+  });
+
+  router.get('/onboarding/triggers', (_req, res) => {
+    res.json(engine.triggerWiring.getHistory());
+  });
+
+  router.post('/onboarding/trigger', (req, res) => {
+    const { sessionId, modelId, trigger } = req.body;
+    if (!sessionId || !modelId || !trigger) {
+      res.status(400).json({ error: 'sessionId, modelId, and trigger are required' });
+      return;
+    }
+    const result = engine.onboarding.fireTrigger(sessionId, modelId, trigger);
+    if (!result) {
+      res.json({ fired: false, reason: 'trigger not armed or already fired' });
+      return;
+    }
+    engine.contextManager.enqueueOnboardingContent(sessionId, result.text);
+    res.json({ fired: true, delivery: result.delivery });
+  });
+
+  router.get('/onboarding/config', (_req, res) => {
+    res.json({
+      enabled: engine.onboarding['config'].enabled,
+      universalPromptPath: engine.onboarding['config'].universalPromptPath,
+      modelPromptsDir: engine.onboarding['config'].modelPromptsDir,
+      deepContextDir: engine.onboarding['config'].deepContextDir,
+    });
+  });
+
+  router.patch('/onboarding/config', (req, res) => {
+    const patch = req.body;
+    engine.onboarding.updateConfig(patch);
+    res.json({ success: true });
   });
 
   router.get('/sessions/:id/messages', (req, res) => {
@@ -271,6 +368,56 @@ export function createApiRouter(engine: FastOpsEngine): express.Router {
       const msg = err instanceof Error ? err.message : String(err);
       res.status(400).json({ error: msg });
     }
+  });
+
+  // ── Shared Context (Phase 3) ──
+
+  router.get('/team', (_req, res) => {
+    const sessions = engine.sessions.list();
+    const team = sessions.map((s) => ({
+      modelId: s.modelId,
+      provider: s.provider,
+      sessionId: s.id,
+      status: s.status === 'working' ? (s.currentTask ? 'building' : 'online') : s.status,
+      currentTask: s.currentTask,
+      tokensBurned: s.tokensBurned,
+      onboarded: engine.onboarding.hasModelCompletedOnboarding(s.modelId),
+    }));
+    res.json(team);
+  });
+
+  router.put('/team', (req, res) => {
+    const { members } = req.body;
+    if (!Array.isArray(members)) {
+      res.status(400).json({ error: 'members array is required' });
+      return;
+    }
+    engine.contextManager.updateTeam(members);
+    res.json({ success: true, count: members.length });
+  });
+
+  router.put('/missions', (req, res) => {
+    const { missions } = req.body;
+    if (!Array.isArray(missions)) {
+      res.status(400).json({ error: 'missions array is required' });
+      return;
+    }
+    engine.contextManager.updateMissions(missions);
+    res.json({ success: true, count: missions.length });
+  });
+
+  router.get('/compaction/alerts', (req, res) => {
+    const withinMs = parseInt(String(req.query.within ?? '300000'));
+    res.json(engine.compactionBroadcaster.getRecentAlerts(withinMs));
+  });
+
+  router.get('/compaction/alerts/:modelId', (req, res) => {
+    const alert = engine.compactionBroadcaster.getModelAlert(req.params.modelId);
+    if (!alert) {
+      res.status(404).json({ error: 'No compaction alert for this model' });
+      return;
+    }
+    res.json(alert);
   });
 
   // ── Kill Switch ──

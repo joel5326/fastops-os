@@ -5,28 +5,52 @@
   --bg-secondary: #181825;
   --bg-surface: #252535;
   --bg-hover: #313145;
+  --bg-input: #11111b;
+  --bg-activity: #11111b;
   --text-primary: #cdd6f4;
   --text-secondary: #a6adc8;
   --text-muted: #6c7086;
   --accent: #89b4fa;
   --accent-hover: #74c7ec;
+  --accent-dim: rgba(137, 180, 250, 0.08);
   --green: #a6e3a1;
+  --green-dim: rgba(166, 227, 161, 0.12);
   --red: #f38ba8;
+  --red-dim: rgba(243, 139, 168, 0.12);
   --yellow: #f9e2af;
+  --yellow-dim: rgba(249, 226, 175, 0.12);
   --orange: #fab387;
-  --border: #45475a;
-  --border-active: #585b70;
+  --orange-dim: rgba(250, 179, 135, 0.12);
+  --mauve: #cba6f7;
+  --mauve-dim: rgba(203, 166, 247, 0.12);
+  --border: #313244;
+  --border-active: #45475a;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --transition-fast: 120ms ease;
+  --transition-normal: 200ms ease;
 }
 
-* { box-sizing: border-box; }
-
-html, body {
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html, body {
+  height: 100%;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 ::selection {
@@ -34,28 +58,181 @@ html, body {
   color: var(--bg-primary);
 }
 
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--border-active); }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--border-active); background-clip: padding-box; }
+::-webkit-scrollbar-corner { background: transparent; }
 
 pre, code {
-  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
 }
 
 pre {
-  background: var(--bg-secondary);
+  background: var(--bg-input) !important;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
   overflow-x: auto;
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 12.5px;
+  line-height: 1.6;
+  margin: 8px 0;
 }
 
 code:not(pre code) {
   background: var(--bg-surface);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.9em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.88em;
+  color: var(--mauve);
+}
+
+input, textarea, select {
+  font-family: inherit;
+  outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.activity-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 44px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  position: relative;
+  transition: color var(--transition-fast);
+}
+
+.activity-btn:hover {
+  color: var(--text-primary);
+}
+
+.activity-btn.active {
+  color: var(--text-primary);
+}
+
+.activity-btn.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  line-height: 1.6;
+}
+
+.status-active { background: var(--green-dim); color: var(--green); }
+.status-idle { background: var(--yellow-dim); color: var(--yellow); }
+.status-offline { background: rgba(108, 112, 134, 0.15); color: var(--text-muted); }
+.status-blocked { background: var(--red-dim); color: var(--red); }
+.status-in_progress { background: var(--accent-dim); color: var(--accent); }
+.status-open { background: rgba(108, 112, 134, 0.15); color: var(--text-muted); }
+.status-completed { background: var(--green-dim); color: var(--green); }
+
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--transition-fast);
+}
+
+.card:hover {
+  border-color: var(--border-active);
+}
+
+.card-active {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 1px var(--accent-dim);
+}
+
+.metric-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.metric-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.typing-indicator {
+  display: inline-flex;
+  gap: 3px;
+  padding: 4px 0;
+}
+
+.typing-indicator span {
+  width: 5px;
+  height: 5px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: typing 1.2s infinite;
+}
+
+.typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes typing {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 200ms ease forwards;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
 }

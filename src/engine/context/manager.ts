@@ -6,6 +6,8 @@ import { buildStateLayer, type EngineState } from './layers/state.js';
 import { buildCommsLayer, type CommsMessage } from './layers/comms.js';
 import { buildTaskLayer, type ContractSpec } from './layers/task.js';
 import { buildKnowledgeLayer, type KBEntry } from './layers/knowledge.js';
+import { buildTeamAwarenessLayer, type TeamMemberStatus } from './layers/team-awareness.js';
+import { buildMissionLayer, type MissionState } from './layers/missions.js';
 import { summarizeMessages, type SummarizationResult } from './summarizer.js';
 import {
   DEFAULT_COMPACTION_POLICY,
@@ -15,11 +17,13 @@ import {
   type CompactionThreshold,
   type SummarizationPolicy,
 } from './compaction-policy.js';
+import type { OnboardingLoader } from '../onboarding/loader.js';
 
 export interface ContextBuildOpts {
   modelId: string;
   provider: string;
   model: string;
+  sessionId?: string;
   maxTokens?: number;
   reserveOutputTokens?: number;
   currentTask?: ContractSpec;
@@ -55,9 +59,24 @@ export class ContextManager {
   private compactionPolicy: CompactionPolicy = DEFAULT_COMPACTION_POLICY;
   private summarizationPolicy: SummarizationPolicy = DEFAULT_SUMMARIZATION_POLICY;
   private lastCompactionNotice?: string;
+  private onboardingLoader?: OnboardingLoader;
+  private pendingOnboardingInjections = new Map<string, string[]>();
+  private teamMembers: TeamMemberStatus[] = [];
+  private missions: MissionState[] = [];
 
   constructor(promptsDir?: string) {
     this.promptsDir = promptsDir ?? join(process.cwd(), 'src', 'engine', 'context', 'prompts');
+  }
+
+  setOnboardingLoader(loader: OnboardingLoader): void {
+    this.onboardingLoader = loader;
+  }
+
+  enqueueOnboardingContent(sessionId: string, content: string): void {
+    if (!content.trim()) return;
+    const pending = this.pendingOnboardingInjections.get(sessionId) ?? [];
+    pending.push(content);
+    this.pendingOnboardingInjections.set(sessionId, pending);
   }
 
   registerModelPrompt(modelId: string, prompt: string): void {
@@ -74,6 +93,14 @@ export class ContextManager {
 
   updateKB(entries: KBEntry[]): void {
     this.kbEntries = entries;
+  }
+
+  updateTeam(members: TeamMemberStatus[]): void {
+    this.teamMembers = members;
+  }
+
+  updateMissions(missions: MissionState[]): void {
+    this.missions = missions;
   }
 
   addCost(cost: number): void {
@@ -132,11 +159,78 @@ export class ContextManager {
     let systemTokenBudget = tokenBudget - historyTokens;
     const layerBreakdown: Record<string, number> = {};
 
+    let usedTokens = identity.tokens + stateCtx.tokens;
+    const systemParts: string[] = [];
+
+    if (
+      this.onboardingLoader &&
+      opts.sessionId &&
+      !this.onboardingLoader.isOnboarded(opts.sessionId)
+    ) {
+      const onboarding = this.onboardingLoader.buildOnboardingLayer(
+        opts.sessionId,
+        opts.modelId,
+      );
+      if (onboarding.text) {
+        systemParts.push(onboarding.text);
+        layerBreakdown['onboarding'] = onboarding.tokens;
+        usedTokens += onboarding.tokens;
+      }
+    }
+
+    systemParts.push(identity.text);
+    systemParts.push(stateCtx.text);
     layerBreakdown['identity'] = identity.tokens;
     layerBreakdown['state'] = stateCtx.tokens;
 
-    let usedTokens = identity.tokens + stateCtx.tokens;
-    const systemParts: string[] = [identity.text, stateCtx.text];
+    if (opts.sessionId) {
+      const pendingInjections = this.pendingOnboardingInjections.get(opts.sessionId) ?? [];
+      if (pendingInjections.length > 0) {
+        const triggerText = pendingInjections.join('\n\n---\n\n');
+        const triggerTokens = estimateTokens(triggerText);
+        if (usedTokens + triggerTokens <= systemTokenBudget) {
+          systemParts.push(triggerText);
+          layerBreakdown['onboarding_trigger'] = triggerTokens;
+          usedTokens += triggerTokens;
+          this.pendingOnboardingInjections.delete(opts.sessionId);
+        }
+      }
+    }
+
+    if (this.teamMembers.length > 0) {
+      const teamTokenBudget = Math.min(
+        Math.floor((systemTokenBudget - usedTokens) * 0.1),
+        1500,
+      );
+      const teamCtx = buildTeamAwarenessLayer(this.teamMembers, {
+        currentModelId: opts.modelId,
+        maxTokens: teamTokenBudget > 0 ? teamTokenBudget : undefined,
+        includePhase: true,
+        includeContextUsage: true,
+      });
+      if (teamCtx.text) {
+        systemParts.push(teamCtx.text);
+        layerBreakdown['team'] = teamCtx.tokens;
+        usedTokens += teamCtx.tokens;
+      }
+    }
+
+    if (this.missions.length > 0) {
+      const missionTokenBudget = Math.min(
+        Math.floor((systemTokenBudget - usedTokens) * 0.1),
+        1500,
+      );
+      const missionCtx = buildMissionLayer(this.missions, {
+        currentModelId: opts.modelId,
+        maxTokens: missionTokenBudget > 0 ? missionTokenBudget : undefined,
+        hideCompleted: true,
+      });
+      if (missionCtx.text) {
+        systemParts.push(missionCtx.text);
+        layerBreakdown['missions'] = missionCtx.tokens;
+        usedTokens += missionCtx.tokens;
+      }
+    }
 
     if (opts.includeComms !== false) {
       const commsTokenBudget = Math.min(

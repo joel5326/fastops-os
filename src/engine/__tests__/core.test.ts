@@ -175,7 +175,7 @@ describe('ToolExecutor', () => {
 
     const result = await executor.execute(
       { id: '1', name: 'echo', arguments: '{"text":"hello"}' },
-      { sessionId: 's1', modelId: 'claude', workingDirectory: '.' },
+      { sessionId: 's1', modelId: 'claude', workingDirectory: '.', sandboxRoot: '.' },
     );
 
     expect(result.isError).toBe(false);
@@ -186,7 +186,7 @@ describe('ToolExecutor', () => {
     const executor = new ToolExecutor();
     const result = await executor.execute(
       { id: '1', name: 'fake_tool', arguments: '{}' },
-      { sessionId: 's1', modelId: 'claude', workingDirectory: '.' },
+      { sessionId: 's1', modelId: 'claude', workingDirectory: '.', sandboxRoot: '.' },
     );
 
     expect(result.isError).toBe(true);
@@ -204,7 +204,7 @@ describe('ToolExecutor', () => {
 
     const result = await executor.execute(
       { id: '1', name: 'write', arguments: '{}' },
-      { sessionId: 's1', modelId: 'gemini', workingDirectory: '.' },
+      { sessionId: 's1', modelId: 'gemini', workingDirectory: '.', sandboxRoot: '.' },
     );
 
     expect(result.isError).toBe(true);

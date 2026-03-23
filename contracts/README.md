@@ -73,6 +73,12 @@ Wave 5 (Integration — depends on everything):
 | FOS-07 | Chat UI | 4 | FOS-01-04 | Cursor-replica web UI with multi-model dashboard |
 | FOS-08 | Integration | 5 | All | Wire everything, migrate data, proof run |
 
+## Platform tools (Phase 1 — agent hands)
+
+| ID | Name | Depends On | Key deliverable |
+|----|------|------------|-----------------|
+| **FOS-P1** | [Agent workspace tools](./FOS-P1-agent-workspace-tools.md) | FOS-03, FOS-06 | Sandboxed file + shell + search; documented shell-escape risk |
+
 ## Proof of Done
 FOS-08 includes a mandatory proof run: 3 contracts executed by 3 different models (builder → QC → validator), fully orchestrated by the engine, with real API calls. No mocks. No "I read the code." Runtime proof.
 

@@ -29,3 +29,19 @@ export function appendToolAuditLog(
   const file = join(auditDir, `tool-${dateStr}.jsonl`);
   appendFileSync(file, JSON.stringify({ ts: new Date().toISOString(), ...entry }) + '\n', 'utf8');
 }
+
+/**
+ * Append-only elevated / break-glass shell audit (unrestricted execution, enterprise write overrides).
+ */
+export function appendElevatedAuditLog(
+  auditDir: string | undefined,
+  entry: Record<string, unknown>,
+): void {
+  if (!auditDir) return;
+  if (!existsSync(auditDir)) {
+    mkdirSync(auditDir, { recursive: true });
+  }
+  const dateStr = new Date().toISOString().split('T')[0];
+  const file = join(auditDir, `elevated-${dateStr}.jsonl`);
+  appendFileSync(file, JSON.stringify({ ts: new Date().toISOString(), ...entry }) + '\n', 'utf8');
+}

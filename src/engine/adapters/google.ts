@@ -182,6 +182,22 @@ export class GoogleAdapter extends BaseAdapter {
       if (text) {
         yield { delta: text, done: false };
       }
+
+      // Gemini returns functionCalls on streaming chunks
+      const fcList = chunk.functionCalls;
+      if (fcList?.length) {
+        for (const fc of fcList) {
+          yield {
+            delta: '',
+            toolCallDelta: {
+              id: fc.id ?? undefined,
+              name: fc.name ?? undefined,
+              arguments: JSON.stringify(fc.args ?? {}),
+            },
+            done: false,
+          };
+        }
+      }
     }
     yield { delta: '', done: true };
   }

@@ -22,12 +22,7 @@ export class AnthropicAdapter extends BaseAdapter {
     return this.withRetry(async () => {
       const start = Date.now();
 
-      const messages = request.messages
-        .filter((m) => m.role !== 'system')
-        .map((m) => ({
-          role: m.role as 'user' | 'assistant',
-          content: m.content,
-        }));
+      const messages = this.convertMessages(request.messages);
 
       const params: Anthropic.MessageCreateParams = {
         model: request.model || this.models[0],
@@ -88,12 +83,7 @@ export class AnthropicAdapter extends BaseAdapter {
   }
 
   async *chatStream(request: ChatRequest): AsyncIterable<ChatChunk> {
-    const messages = request.messages
-      .filter((m) => m.role !== 'system')
-      .map((m) => ({
-        role: m.role as 'user' | 'assistant',
-        content: m.content,
-      }));
+    const messages = this.convertMessages(request.messages);
 
     const stream = this.client.messages.stream({
       model: request.model || this.models[0],
@@ -101,17 +91,111 @@ export class AnthropicAdapter extends BaseAdapter {
       system: request.systemPrompt,
       messages,
       ...(request.temperature !== undefined && { temperature: request.temperature }),
+      ...(request.tools?.length && {
+        tools: request.tools.map((t) => ({
+          name: t.name,
+          description: t.description,
+          input_schema: t.parameters as Anthropic.Tool['input_schema'],
+        })),
+      }),
     });
 
+    // Track active tool_use blocks by content block index to handle parallel tool calls
+    const toolBlockMap = new Map<number, { id: string; name: string }>();
+    let activeBlockIndex = -1;
+
     for await (const event of stream) {
-      if (event.type === 'content_block_delta') {
+      if (event.type === 'content_block_start') {
+        const block = event.content_block;
+        if (block.type === 'tool_use') {
+          toolBlockMap.set(event.index, { id: block.id, name: block.name });
+          activeBlockIndex = event.index;
+          yield {
+            delta: '',
+            toolCallDelta: {
+              id: block.id,
+              name: block.name,
+            },
+            done: false,
+          };
+        }
+      } else if (event.type === 'content_block_delta') {
         const delta = event.delta;
         if ('text' in delta) {
           yield { delta: delta.text, done: false };
+        } else if (delta.type === 'input_json_delta') {
+          // Use event.index to find the correct tool block
+          const blockIndex = event.index ?? activeBlockIndex;
+          const toolBlock = toolBlockMap.get(blockIndex);
+          yield {
+            delta: '',
+            toolCallDelta: {
+              id: toolBlock?.id,
+              name: toolBlock?.name,
+              arguments: delta.partial_json,
+            },
+            done: false,
+          };
         }
       } else if (event.type === 'message_stop') {
         yield { delta: '', done: true };
       }
     }
+  }
+
+  private convertMessages(
+    msgs: Array<{ role: string; content: string; toolCallId?: string; name?: string; toolCalls?: Array<{ id: string; name: string; arguments: string }> }>,
+  ): Anthropic.MessageParam[] {
+    const result: Anthropic.MessageParam[] = [];
+
+    for (const m of msgs) {
+      if (m.role === 'system') continue;
+
+      if (m.role === 'assistant') {
+        const contentBlocks: Anthropic.ContentBlockParam[] = [];
+        if (m.content) {
+          contentBlocks.push({ type: 'text', text: m.content });
+        }
+        if (m.toolCalls?.length) {
+          for (const tc of m.toolCalls) {
+            contentBlocks.push({
+              type: 'tool_use',
+              id: tc.id,
+              name: tc.name,
+              input: JSON.parse(tc.arguments),
+            });
+          }
+        }
+        if (contentBlocks.length > 0) {
+          result.push({ role: 'assistant', content: contentBlocks });
+        }
+        continue;
+      }
+
+      if (m.role === 'tool') {
+        const lastMsg = result[result.length - 1];
+        if (lastMsg?.role === 'user' && Array.isArray(lastMsg.content)) {
+          (lastMsg.content as Anthropic.ToolResultBlockParam[]).push({
+            type: 'tool_result',
+            tool_use_id: m.toolCallId ?? '',
+            content: m.content,
+          });
+        } else {
+          result.push({
+            role: 'user',
+            content: [{
+              type: 'tool_result',
+              tool_use_id: m.toolCallId ?? '',
+              content: m.content,
+            }],
+          });
+        }
+        continue;
+      }
+
+      result.push({ role: 'user', content: m.content });
+    }
+
+    return result;
   }
 }

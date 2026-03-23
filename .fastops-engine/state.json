@@ -24,11 +24,37 @@
     }
   ],
   "halt": false,
-  "todos": {},
-  "sessionCosts": {
-    "session-c9a810d9": 0.004089000000000001
+  "todos": {
+    "session-62613423": [
+      {
+        "id": "mission-brief-complete",
+        "status": "done",
+        "createdAt": "2026-03-23T13:14:29.861Z"
+      },
+      {
+        "id": "tactical-assessment",
+        "status": "active",
+        "createdAt": "2026-03-23T13:14:29.861Z"
+      }
+    ]
   },
-  "totalCost": 0.004089000000000001,
+  "sessionCosts": {
+    "session-c9a810d9": 0.004089000000000001,
+    "session-33b89ae1": 0.012567,
+    "session-e7b82576": 0.012264,
+    "session-5921288e": 0.0059900000000000005,
+    "session-a68f6818": 0.00021970000000000003,
+    "session-2bd74ea7": 0.050583,
+    "session-4000d934": 0.043014,
+    "session-8a315503": 0.048558000000000004,
+    "session-62613423": 2.218326,
+    "session-2716559d": 0.00020710000000000002,
+    "session-b5915602": 0.00020540000000000003,
+    "session-2f2be1ac": 0.0002672
+  },
+  "totalCost": 2.3962904000000003,
   "startedAt": "2026-03-20T20:42:14.154Z",
-  "lastUpdatedAt": "2026-03-20T20:43:03.417Z"
+  "lastUpdatedAt": "2026-03-23T14:10:18.226Z",
+  "compactionPolicyHash": "df76161faa60660c0e49913daef550f11429e73130ec96854af1f16c91d99751",
+  "compactionPolicyVersion": 1
 }

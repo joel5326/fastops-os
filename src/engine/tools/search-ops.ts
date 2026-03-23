@@ -1,10 +1,14 @@
 import { execSync } from 'child_process';
-import { resolve } from 'path';
 import type { ToolHandler } from './types.js';
+import { resolveSandboxedPath } from './path-policy.js';
 
 export const glob: ToolHandler = async (args, context) => {
   const pattern = String(args.pattern);
-  const cwd = args.cwd ? resolve(context.workingDirectory, String(args.cwd)) : context.workingDirectory;
+  const cwd = resolveSandboxedPath(
+    args.cwd ? String(args.cwd) : '.',
+    context.workingDirectory,
+    context.sandboxRoot,
+  );
 
   try {
     const result = execSync(`npx glob "${pattern}"`, {
@@ -20,9 +24,11 @@ export const glob: ToolHandler = async (args, context) => {
 
 export const grep: ToolHandler = async (args, context) => {
   const pattern = String(args.pattern);
-  const searchPath = args.path
-    ? resolve(context.workingDirectory, String(args.path))
-    : context.workingDirectory;
+  const searchPath = resolveSandboxedPath(
+    args.path ? String(args.path) : '.',
+    context.workingDirectory,
+    context.sandboxRoot,
+  );
 
   try {
     const flags = ['-rn', '--color=never', '--max-count=50'];

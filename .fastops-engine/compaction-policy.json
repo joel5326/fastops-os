@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "updatedAt": "2026-03-23T12:51:47.152Z",
+  "compactionPolicy": {
+    "checkpointThreshold": 60,
+    "summarizeThreshold": 80,
+    "handoffThreshold": 90,
+    "hardStopThreshold": 95,
+    "summaryTargetPercent": 0.5
+  },
+  "summarizationPolicy": {
+    "preserveRecentCount": 5,
+    "dropToolOutputs": true,
+    "preservePatterns": [
+      {},
+      {},
+      {}
+    ],
+    "urgentPatterns": [
+      {},
+      {},
+      {}
+    ]
+  },
+  "policyHash": "df76161faa60660c0e49913daef550f11429e73130ec96854af1f16c91d99751"
+}

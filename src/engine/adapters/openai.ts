@@ -89,11 +89,39 @@ export class OpenAIAdapter extends BaseAdapter {
       }),
     });
 
+    // Accumulate streamed tool call fragments by index
+    const toolCallAccum = new Map<number, { id: string; name: string; arguments: string }>();
+
     for await (const chunk of stream) {
       const delta = chunk.choices[0]?.delta;
       if (delta?.content) {
         yield { delta: delta.content, done: false };
       }
+
+      // OpenAI streams tool_calls as incremental deltas keyed by index
+      if (delta?.tool_calls) {
+        for (const tc of delta.tool_calls) {
+          const idx = tc.index;
+          if (!toolCallAccum.has(idx)) {
+            toolCallAccum.set(idx, { id: '', name: '', arguments: '' });
+          }
+          const acc = toolCallAccum.get(idx)!;
+          if (tc.id) acc.id = tc.id;
+          if (tc.function?.name) acc.name += tc.function.name;
+          if (tc.function?.arguments) acc.arguments += tc.function.arguments;
+
+          yield {
+            delta: '',
+            toolCallDelta: {
+              id: acc.id || undefined,
+              name: acc.name || undefined,
+              arguments: tc.function?.arguments || undefined,
+            },
+            done: false,
+          };
+        }
+      }
+
       if (chunk.choices[0]?.finish_reason) {
         yield { delta: '', done: true };
       }

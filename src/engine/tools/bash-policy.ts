@@ -85,13 +85,43 @@ export function classifyBashCommand(command: string): BashClassification {
   return { tier: 'write_restricted', reasons: ['unknown-default'] };
 }
 
+export interface EnterpriseBashGateOptions {
+  /** FASTOPS_BASH_ALLOW_ELEVATED=1 — allow unrestricted in enterprise. */
+  allowElevated: boolean;
+  /** FASTOPS_BASH_ALLOW_WRITE=1 — allow write_restricted when strict mode is on. */
+  allowWrite: boolean;
+  /** FASTOPS_ENTERPRISE_BASH_STRICT=1 — block write_restricted unless allowWrite. */
+  strictMode: boolean;
+}
+
 /**
- * Enterprise: block only unrestricted unless break-glass.
+ * Enterprise: unrestricted blocked unless break-glass; write_restricted blocked in strict mode unless write break-glass.
  */
 export function shouldBlockBashInEnterprise(
   tier: BashRiskTier,
   allowElevated: boolean,
 ): boolean {
-  if (allowElevated) return false;
-  return tier === 'unrestricted';
+  return resolveEnterpriseBashGate(tier, {
+    allowElevated,
+    allowWrite: false,
+    strictMode: false,
+  }).blocked;
+}
+
+export function resolveEnterpriseBashGate(
+  tier: BashRiskTier,
+  opts: EnterpriseBashGateOptions,
+): { blocked: boolean; reason?: string } {
+  if (tier === 'read_only') {
+    return { blocked: false };
+  }
+  if (tier === 'unrestricted') {
+    if (opts.allowElevated) return { blocked: false };
+    return { blocked: true, reason: 'unrestricted_requires_break_glass' };
+  }
+  // write_restricted
+  if (opts.strictMode && !opts.allowWrite) {
+    return { blocked: true, reason: 'write_restricted_requires_break_glass' };
+  }
+  return { blocked: false };
 }

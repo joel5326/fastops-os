@@ -53,6 +53,9 @@ export interface WeightExtractionRules {
   /** Enable weight extraction (Tier 2) */
   enabled: boolean;
 
+  /** Extraction mode */
+  mode: 'AGENT_DIRECT' | 'PROGRAMMATIC' | 'HYBRID';
+
   /** Ask agent directly at compaction time (Cairn Protocol) */
   askAgentDirectly: boolean;
 
@@ -109,10 +112,16 @@ export type CompactionTrigger =
 // ============================================================================
 
 export interface ContextAnalysis {
-  sessionId: string;
+  sessionId?: string;
   timestamp: string;
-  stats: ContextStats;
-  items: ContextItem[];
+  totalItems: number;
+  stats?: ContextStats;
+  itemsByTier: {
+    verbatim: number;
+    weight: number;
+    discard: number;
+  };
+  items: TierAssignment[];
 }
 
 export interface ContextStats {
@@ -140,6 +149,7 @@ export type ContextItemType =
   | 'CODE_COMMIT'
   | 'OPERATOR_INSTRUCTION'
   | 'CONTRACT_DECISION'
+  | 'CONTRACT_TRANSITION'
   | 'SAFETY_EVENT'
   | 'TOOL_OUTPUT'
   | 'EXPLORATION_PATH'
@@ -147,6 +157,15 @@ export type ContextItemType =
   | 'INTERMEDIATE_STATE'
   | 'AGENT_MESSAGE'
   | 'THINKING_TRACE';
+
+export interface TierAssignment {
+  itemId: string;
+  itemType: ContextItemType;
+  tier: 'VERBATIM' | 'WEIGHT' | 'DISCARD';
+  score: number;
+  scores: Record<string, number>;
+  reasoning: string;
+}
 
 export interface ItemMetadata {
   /** Whether this item has been referenced by subsequent items */
@@ -316,10 +335,20 @@ export interface ContextUsage {
 // Default Configuration
 // ============================================================================
 
+export const DEFAULT_WEIGHT_EXTRACTION_RULES: WeightExtractionRules = {
+  enabled: true,
+  mode: 'HYBRID',
+  askAgentDirectly: true,
+  inferFromTrace: true,
+  preserveUncertainty: true,
+  preserveQuestions: true,
+  preserveEmotionalState: true,
+};
+
 export const DEFAULT_COMPACTION_CONFIG: CompactionConfig = {
   triggerAtContextPercent: 85,
   triggerBeforeToolCall: true,
-  
+
   verbatim: {
     codeCommits: true,
     operatorInstructions: true,
@@ -327,15 +356,8 @@ export const DEFAULT_COMPACTION_CONFIG: CompactionConfig = {
     safetyEvents: true,
     explicitCommitments: [],
   },
-  
-  weightExtraction: {
-    enabled: true,
-    askAgentDirectly: true,
-    inferFromTrace: true,
-    preserveUncertainty: true,
-    preserveQuestions: true,
-    preserveEmotionalState: true,
-  },
+
+  weightExtraction: DEFAULT_WEIGHT_EXTRACTION_RULES,
   
   discard: {
     toolOutputsAfterSeconds: 300, // 5 minutes

@@ -3,6 +3,7 @@ export interface Message {
   content: string;
   toolCallId?: string;
   name?: string;
+  toolCalls?: Array<{ id: string; name: string; arguments: string }>;
 }
 
 export interface ToolDefinition {

@@ -8,7 +8,7 @@ import { EventBus } from './event-bus.js';
 import { StateStore } from './state-store.js';
 import { SessionManager } from './session.js';
 import type { SessionOpts, Session } from './session.js';
-import { Dispatcher, type TaskPayload, type TaskResult, type DispatcherConfig } from './dispatcher.js';
+import { Dispatcher, type TaskPayload, type TaskResult, type DispatcherConfig, type DispatchStreamEvent } from './dispatcher.js';
 import { ToolExecutor } from '../tools/executor.js';
 import { readFile, writeFile, editFile } from '../tools/file-ops.js';
 import { glob, grep } from '../tools/search-ops.js';
@@ -102,7 +102,9 @@ export class FastOpsEngine {
     this.onboarding = new OnboardingLoader(this.workingDirectory, opts?.onboarding);
     this.contextManager.setOnboardingLoader(this.onboarding);
 
-    this.sessions = new SessionManager();
+    this.sessions = new SessionManager({
+      persistenceDir: join(this.workingDirectory, '.fastops-engine', 'sessions'),
+    });
 
     this.tools = new ToolExecutor();
     this.registerBuiltInTools();
@@ -120,7 +122,9 @@ export class FastOpsEngine {
 
     this.middleware = new MiddlewareStack();
     this.middleware.use(new HaltCheckMiddleware(this.workingDirectory));
-    this.middleware.use(new SafetyPolicyMiddleware());
+    this.middleware.use(new SafetyPolicyMiddleware({
+      tier: config.securityTier === 'enterprise' ? 'enterprise' : 'default',
+    }));
     this.costGate = new CostGateMiddleware();
     this.middleware.use(this.costGate);
     const auditDir = join(this.workingDirectory, '.fastops-engine', 'audit');
@@ -155,6 +159,15 @@ export class FastOpsEngine {
 
     this.compactionBroadcaster = new CompactionBroadcaster(this.events, this.contextManager);
     this.compactionBroadcaster.wire();
+
+    this.events.on('compaction.completed', (...args: unknown[]) => {
+      const p = args[0] as { artifact: unknown };
+      try {
+        this.compactionArtifactStore.save(p.artifact as any);
+      } catch (err) {
+        console.error('[Engine] Failed to persist compaction artifact:', err);
+      }
+    });
   }
 
   async start(): Promise<void> {
@@ -249,9 +262,8 @@ export class FastOpsEngine {
     // Check for previous compaction artifacts to resume from
     const latestArtifact = opts?.sessionId ? this.compactionArtifactStore.getLatest(opts.sessionId) : null;
     const initialMessages = latestArtifact ? [{
-      role: 'system',
+      role: 'system' as const,
       content: latestArtifact.resumePrompt,
-      timestamp: new Date().toISOString()
     }] : undefined;
 
     const session = this.sessions.create(modelId, {
@@ -274,6 +286,10 @@ export class FastOpsEngine {
 
   async dispatchParallel(tasks: Array<{ sessionId: string; task: TaskPayload }>): Promise<TaskResult[]> {
     return this.dispatcher.dispatchParallel(tasks);
+  }
+
+  dispatchStream(sessionId: string, task: TaskPayload): AsyncIterable<DispatchStreamEvent> {
+    return this.dispatcher.dispatchStream(sessionId, task);
   }
 
   loadContracts(contracts: Contract[]): void {
