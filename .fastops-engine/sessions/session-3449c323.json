@@ -1,0 +1,14 @@
+{
+  "id": "session-3449c323",
+  "modelId": "anthropic",
+  "provider": "anthropic",
+  "model": "claude-sonnet-4-20250514",
+  "messages": [],
+  "status": "closed",
+  "tokensBurned": 0,
+  "costAccumulated": 0,
+  "toolCallCount": 0,
+  "createdAt": "2026-03-23T14:45:49.316Z",
+  "lastActiveAt": "2026-03-23T14:45:49.338Z",
+  "maxMessages": 50
+}

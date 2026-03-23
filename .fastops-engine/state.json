@@ -50,11 +50,12 @@
     "session-62613423": 2.218326,
     "session-2716559d": 0.00020710000000000002,
     "session-b5915602": 0.00020540000000000003,
-    "session-2f2be1ac": 0.0002672
+    "session-2f2be1ac": 0.0002672,
+    "session-8cd48043": 0.0011051000000000001
   },
-  "totalCost": 2.3962904000000003,
+  "totalCost": 2.3973955,
   "startedAt": "2026-03-20T20:42:14.154Z",
-  "lastUpdatedAt": "2026-03-23T14:10:18.226Z",
+  "lastUpdatedAt": "2026-03-23T14:28:47.032Z",
   "compactionPolicyHash": "df76161faa60660c0e49913daef550f11429e73130ec96854af1f16c91d99751",
   "compactionPolicyVersion": 1
 }
