@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import { BaseAdapter } from './base.js';
 import type { ChatRequest, ChatResponse, ChatChunk, AdapterConfig } from '../types.js';
 import { calculateCost } from '../types.js';
+import { toOpenAIChatCompletionMessages, toolCallsFromOpenAICompletion } from './openai-chat-format.js';
 
 export class OpenAIAdapter extends BaseAdapter {
   readonly provider = 'openai';
@@ -14,62 +15,11 @@ export class OpenAIAdapter extends BaseAdapter {
     this.client = new OpenAI({ apiKey: config.apiKey });
   }
 
-  /**
-   * Maps FastOps messages to OpenAI Chat Completions format:
-   * - assistant: optional text + optional tool_calls (function objects with id)
-   * - tool: tool_call_id + content (function output)
-   */
-  private toOpenAIMessages(request: ChatRequest): OpenAI.Chat.ChatCompletionMessageParam[] {
-    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-      { role: 'system', content: request.systemPrompt },
-    ];
-
-    for (const m of request.messages) {
-      if (m.role === 'system') continue;
-
-      if (m.role === 'assistant') {
-        const hasText = Boolean(m.content?.trim());
-        const hasTools = Boolean(m.toolCalls?.length);
-        if (!hasText && !hasTools) continue;
-
-        const assistant: OpenAI.Chat.ChatCompletionAssistantMessageParam = {
-          role: 'assistant',
-          content: hasText ? m.content : null,
-        };
-        if (hasTools) {
-          assistant.tool_calls = m.toolCalls!.map((tc) => ({
-            id: tc.id,
-            type: 'function' as const,
-            function: {
-              name: tc.name,
-              arguments: tc.arguments,
-            },
-          }));
-        }
-        messages.push(assistant);
-        continue;
-      }
-
-      if (m.role === 'tool') {
-        messages.push({
-          role: 'tool',
-          tool_call_id: m.toolCallId ?? '',
-          content: m.content,
-        });
-        continue;
-      }
-
-      messages.push({ role: 'user', content: m.content });
-    }
-
-    return messages;
-  }
-
   async chat(request: ChatRequest): Promise<ChatResponse> {
     return this.withRetry(async () => {
       const start = Date.now();
 
-      const messages = this.toOpenAIMessages(request);
+      const messages = toOpenAIChatCompletionMessages(request);
 
       const params: OpenAI.Chat.ChatCompletionCreateParams = {
         model: request.model || this.models[0],
@@ -96,25 +46,15 @@ export class OpenAIAdapter extends BaseAdapter {
       const latencyMs = Date.now() - start;
       const choice = response.choices[0];
 
-      const toolCalls: ChatResponse['toolCalls'] = [];
-      if (choice.message.tool_calls) {
-        for (const tc of choice.message.tool_calls) {
-          if (tc.type === 'function') {
-            toolCalls.push({
-              id: tc.id,
-              name: tc.function.name,
-              arguments: tc.function.arguments,
-            });
-          }
-        }
-      }
+      const parsed = toolCallsFromOpenAICompletion(choice.message.tool_calls);
+      const toolCalls = parsed.length > 0 ? parsed : undefined;
 
       const inputTokens = response.usage?.prompt_tokens ?? 0;
       const outputTokens = response.usage?.completion_tokens ?? 0;
 
       return {
         content: choice.message.content ?? '',
-        toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+        toolCalls,
         usage: {
           inputTokens,
           outputTokens,
@@ -129,7 +69,7 @@ export class OpenAIAdapter extends BaseAdapter {
   }
 
   async *chatStream(request: ChatRequest): AsyncIterable<ChatChunk> {
-    const messages = this.toOpenAIMessages(request);
+    const messages = toOpenAIChatCompletionMessages(request);
 
     const stream = await this.client.chat.completions.create({
       model: request.model || this.models[0],
