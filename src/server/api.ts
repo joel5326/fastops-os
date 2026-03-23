@@ -48,7 +48,7 @@ export function createApiRouter(engine: FastOpsEngine): express.Router {
 
   router.post('/sessions/:id/message', async (req, res) => {
     const { id } = req.params;
-    const { content, type = 'freeform', contractId } = req.body;
+    const { content, type = 'freeform', contractId, activeProductId } = req.body;
 
     if (!content) {
       res.status(400).json({ error: 'content is required' });
@@ -60,6 +60,7 @@ export function createApiRouter(engine: FastOpsEngine): express.Router {
         type,
         contractId,
         prompt: content,
+        activeProductId,
       });
 
       res.json({
@@ -79,7 +80,7 @@ export function createApiRouter(engine: FastOpsEngine): express.Router {
 
   router.post('/sessions/:id/stream', async (req, res) => {
     const { id } = req.params;
-    const { content, type = 'freeform', contractId } = req.body;
+    const { content, type = 'freeform', contractId, activeProductId } = req.body;
 
     if (!content) {
       res.status(400).json({ error: 'content is required' });
@@ -98,6 +99,7 @@ export function createApiRouter(engine: FastOpsEngine): express.Router {
         type,
         contractId,
         prompt: content,
+        activeProductId,
       });
 
       for await (const event of stream) {
@@ -490,6 +492,218 @@ export function createApiRouter(engine: FastOpsEngine): express.Router {
       return;
     }
     res.json(alert);
+  });
+
+  // ── Subagents ──
+
+  router.get('/subagents', (req, res) => {
+    const parentId = req.query.parent as string | undefined;
+    const productId = req.query.product as string | undefined;
+    let list = engine.subagents.listAll();
+    if (parentId) list = list.filter((s) => s.parentSessionId === parentId);
+    if (productId) list = list.filter((s) => s.productId === productId);
+    res.json(list);
+  });
+
+  router.get('/subagents/active', (_req, res) => {
+    res.json(engine.subagents.listActive());
+  });
+
+  router.get('/subagents/:callsign', (req, res) => {
+    const sub = engine.subagents.getByCallsign(req.params.callsign);
+    if (!sub) {
+      res.status(404).json({ error: `Subagent not found: ${req.params.callsign}` });
+      return;
+    }
+    res.json(sub);
+  });
+
+  router.post('/subagents', (req, res) => {
+    const {
+      callsign, type = 'custom', persistence = 'ephemeral',
+      parentSessionId, parentModelId, modelId,
+      productId, missionId, commsChannel, maxIdleMs,
+    } = req.body;
+
+    if (!callsign || !parentSessionId || !parentModelId || !modelId) {
+      res.status(400).json({
+        error: 'callsign, parentSessionId, parentModelId, and modelId are required',
+      });
+      return;
+    }
+
+    const validTypes = ['build', 'research', 'qc', 'onboard', 'custom'];
+    if (!validTypes.includes(type)) {
+      res.status(400).json({ error: `Invalid type. Must be one of: ${validTypes.join(', ')}` });
+      return;
+    }
+
+    const validPersistence = ['ephemeral', 'persistent'];
+    if (!validPersistence.includes(persistence)) {
+      res.status(400).json({ error: `Invalid persistence. Must be one of: ${validPersistence.join(', ')}` });
+      return;
+    }
+
+    try {
+      const result = engine.spawnSubagent({
+        callsign, type, persistence,
+        parentSessionId, parentModelId, modelId,
+        productId, missionId, commsChannel, maxIdleMs,
+      });
+      res.json(result);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(409).json({ error: msg });
+    }
+  });
+
+  router.post('/subagents/:callsign/message', (req, res) => {
+    const { from, content, type = 'task' } = req.body;
+    if (!from || !content) {
+      res.status(400).json({ error: 'from and content are required' });
+      return;
+    }
+    const sent = engine.sendToSubagent({
+      from,
+      to: req.params.callsign,
+      content,
+      type,
+      ts: new Date().toISOString(),
+    });
+    if (!sent) {
+      res.status(404).json({ error: `Subagent not found or terminated: ${req.params.callsign}` });
+      return;
+    }
+    res.json({ sent: true, to: req.params.callsign });
+  });
+
+  router.post('/subagents/:callsign/wake', (_req, res) => {
+    const sub = engine.subagents.wake(_req.params.callsign);
+    if (!sub) {
+      res.status(404).json({ error: `Subagent not found: ${_req.params.callsign}` });
+      return;
+    }
+    res.json({ callsign: sub.callsign, lifecycle: sub.lifecycle });
+  });
+
+  router.post('/subagents/:callsign/idle', (_req, res) => {
+    const sub = engine.subagents.goIdle(_req.params.callsign);
+    if (!sub) {
+      res.status(404).json({ error: `Subagent not found: ${_req.params.callsign}` });
+      return;
+    }
+    res.json({ callsign: sub.callsign, lifecycle: sub.lifecycle });
+  });
+
+  router.delete('/subagents/:callsign', (req, res) => {
+    const sub = engine.subagents.terminate(req.params.callsign);
+    if (!sub) {
+      res.status(404).json({ error: `Subagent not found: ${req.params.callsign}` });
+      return;
+    }
+    res.json({ callsign: sub.callsign, lifecycle: sub.lifecycle, terminatedAt: sub.terminatedAt });
+  });
+
+  // ── Products (Architecture Layer 2) ──
+
+  router.get('/products', (_req, res) => {
+    const products = engine.productLoader.listProducts().map((p) => ({
+      id: p.registration.id,
+      name: p.config.name,
+      version: p.config.version,
+      active: p.registration.active,
+      repoPath: p.registration.repoPath,
+      missionCount: p.missions.length,
+      activeMissions: p.missions.filter((m) => m.status !== 'done').length,
+    }));
+    res.json(products);
+  });
+
+  router.get('/products/:id', (req, res) => {
+    const product = engine.productLoader.getProduct(req.params.id);
+    if (!product) {
+      res.status(404).json({ error: `Product not found: ${req.params.id}` });
+      return;
+    }
+    res.json({
+      id: product.registration.id,
+      name: product.config.name,
+      version: product.config.version,
+      active: product.registration.active,
+      repoPath: product.registration.repoPath,
+      config: product.config,
+      missions: product.missions,
+      hasDomainContext: !!product.domainContext,
+    });
+  });
+
+  router.post('/products', (req, res) => {
+    const { id, name, repoPath, missionsDir, contextDir, active = true } = req.body;
+    if (!id || !name || !repoPath) {
+      res.status(400).json({ error: 'id, name, and repoPath are required' });
+      return;
+    }
+    try {
+      const loaded = engine.registerProduct({
+        id,
+        name,
+        repoPath,
+        missionsDir: missionsDir || 'missions/',
+        contextDir: contextDir || 'context/',
+        active,
+      });
+      res.json({
+        id: loaded.registration.id,
+        name: loaded.config.name,
+        missionCount: loaded.missions.length,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(400).json({ error: msg });
+    }
+  });
+
+  router.get('/products/:id/missions', (req, res) => {
+    const product = engine.productLoader.getProduct(req.params.id);
+    if (!product) {
+      res.status(404).json({ error: `Product not found: ${req.params.id}` });
+      return;
+    }
+    const missions = engine.productLoader.getProductMissions(req.params.id);
+    res.json(missions);
+  });
+
+  router.get('/products/:id/context', (req, res) => {
+    const modelId = req.query.modelId as string | undefined;
+    const ctx = engine.getProductContext(req.params.id, modelId);
+    if (!ctx) {
+      res.status(404).json({ error: `Product not found: ${req.params.id}` });
+      return;
+    }
+    res.json(ctx);
+  });
+
+  router.post('/products/:id/reload', (req, res) => {
+    const loaded = engine.productLoader.reloadProduct(req.params.id);
+    if (!loaded) {
+      res.status(404).json({ error: `Product not found: ${req.params.id}` });
+      return;
+    }
+    res.json({
+      id: loaded.registration.id,
+      name: loaded.config.name,
+      missionCount: loaded.missions.length,
+    });
+  });
+
+  router.delete('/products/:id', (req, res) => {
+    const removed = engine.productLoader.unregisterProduct(req.params.id);
+    res.json({ success: removed });
+  });
+
+  router.get('/missions', (_req, res) => {
+    const allMissions = engine.productLoader.getAllMissions();
+    res.json(allMissions);
   });
 
   // ── Kill Switch ──

@@ -34,6 +34,10 @@ import {
 } from '../persistence/compaction-event-ledger.js';
 import { CompactionArtifactStore } from '../persistence/compaction-artifact-store.js';
 import { CompactionBroadcaster } from '../context/compaction-broadcast.js';
+import { ProductLoader } from '../products/loader.js';
+import type { ProductRegistration, LoadedProduct } from '../products/types.js';
+import { SubagentManager } from '../subagents/manager.js';
+import type { SubagentConfig, SubagentSpawnResult, SubagentMessage } from '../subagents/types.js';
 
 export interface EngineOptions {
   workingDirectory?: string;
@@ -63,6 +67,8 @@ export class FastOpsEngine {
   readonly compactionArtifactStore: CompactionArtifactStore;
   readonly triggerWiring: OnboardingTriggerWiring;
   readonly compactionBroadcaster: CompactionBroadcaster;
+  readonly productLoader: ProductLoader;
+  readonly subagents: SubagentManager;
 
   private registry: AdapterRegistry;
   readonly securityTier: string;
@@ -99,11 +105,30 @@ export class FastOpsEngine {
       baseDir: join(this.workingDirectory, '.fastops-engine', 'compaction-artifacts'),
     });
 
+    this.productLoader = new ProductLoader();
+    if (config.products) {
+      for (const reg of config.products) {
+        try {
+          const loaded = this.productLoader.registerProduct(reg);
+          console.log(`[Engine] Registered product: ${loaded.config.name} (${loaded.missions.length} missions)`);
+        } catch (err) {
+          console.warn(`[Engine] Failed to register product ${reg.id}:`, err instanceof Error ? err.message : err);
+        }
+      }
+    }
+
     this.onboarding = new OnboardingLoader(this.workingDirectory, opts?.onboarding);
     this.contextManager.setOnboardingLoader(this.onboarding);
+    this.contextManager.setProductLoader(this.productLoader);
 
     this.sessions = new SessionManager({
       persistenceDir: join(this.workingDirectory, '.fastops-engine', 'sessions'),
+    });
+
+    this.subagents = new SubagentManager({
+      events: this.events,
+      sessions: this.sessions,
+      comms: this.comms,
     });
 
     this.tools = new ToolExecutor();
@@ -244,6 +269,7 @@ export class FastOpsEngine {
   async stop(): Promise<void> {
     if (!this.running) return;
 
+    this.subagents.shutdown();
     this.stateStore.persistNow();
     this.stateStore.destroy();
     this.running = false;
@@ -315,6 +341,35 @@ export class FastOpsEngine {
     this.onboarding.markModelOnboarded(modelId);
     this.events.emit('onboarding.completed', { modelId, via: 'api' });
     return { success: true, modelId };
+  }
+
+  spawnSubagent(config: SubagentConfig): SubagentSpawnResult {
+    if (config.parentSessionId && !this.sessions.get(config.parentSessionId)) {
+      throw new Error(`Parent session not found: ${config.parentSessionId}`);
+    }
+    
+    // Validate modelId is available in registry
+    this.registry.getOrThrow(config.modelId);
+
+    return this.subagents.spawn(config);
+  }
+
+  sendToSubagent(msg: SubagentMessage): boolean {
+    return this.subagents.sendMessage(msg);
+  }
+
+  registerProduct(registration: ProductRegistration): LoadedProduct {
+    const loaded = this.productLoader.registerProduct(registration);
+    this.events.emit('product.registered', {
+      productId: loaded.registration.id,
+      name: loaded.config.name,
+      missions: loaded.missions.length,
+    });
+    return loaded;
+  }
+
+  getProductContext(productId: string, modelId?: string) {
+    return this.productLoader.buildProductContextLayer(productId, modelId);
   }
 
   private registerBuiltInTools(): void {

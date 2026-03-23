@@ -14,6 +14,7 @@ export interface TaskPayload {
   contractId?: string;
   prompt: string;
   model?: string;
+  activeProductId?: string;
   contextOverrides?: {
     kbQuery?: string;
     includeComms?: boolean;
@@ -142,6 +143,7 @@ export class Dispatcher {
             includeComms: task.contextOverrides?.includeComms,
             commsWindow: task.contextOverrides?.commsWindow,
             kbQuery: task.contextOverrides?.kbQuery,
+            activeProductId: task.activeProductId,
           },
           session.messages,
         );
@@ -365,6 +367,7 @@ export class Dispatcher {
             includeComms: task.contextOverrides?.includeComms,
             commsWindow: task.contextOverrides?.commsWindow,
             kbQuery: task.contextOverrides?.kbQuery,
+            activeProductId: task.activeProductId,
           },
           session.messages,
         );

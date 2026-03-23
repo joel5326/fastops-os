@@ -1,4 +1,7 @@
 import { config as dotenvConfig } from 'dotenv';
+import { existsSync, readFileSync } from 'fs';
+import { join } from 'path';
+import type { ProductRegistration, OverwatchConfig, KnowledgeServiceConfig } from './engine/products/types.js';
 
 export type SecurityTier = 'development' | 'enterprise';
 
@@ -14,6 +17,9 @@ export interface FastOpsConfig {
     xai?: { apiKey: string };
     moonshot?: { apiKey: string };
   };
+  products?: ProductRegistration[];
+  knowledge?: KnowledgeServiceConfig;
+  overwatch?: OverwatchConfig;
 }
 
 export function loadConfig(): FastOpsConfig {
@@ -64,5 +70,21 @@ export function loadConfig(): FastOpsConfig {
     }
   }
 
-  return { port, securityTier, adapters };
+  let products: ProductRegistration[] | undefined;
+  let knowledge: KnowledgeServiceConfig | undefined;
+  let overwatch: OverwatchConfig | undefined;
+
+  const configPath = process.env.FASTOPS_CONFIG_PATH || join(process.cwd(), 'fastops-engine.json');
+  if (existsSync(configPath)) {
+    try {
+      const parsed = JSON.parse(readFileSync(configPath, 'utf8'));
+      if (parsed.products) products = parsed.products;
+      if (parsed.knowledge) knowledge = parsed.knowledge;
+      if (parsed.overwatch) overwatch = parsed.overwatch;
+    } catch (e) {
+      console.error('[Config] Failed to parse fastops-engine.json:', e);
+    }
+  }
+
+  return { port, securityTier, adapters, products, knowledge, overwatch };
 }

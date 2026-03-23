@@ -18,6 +18,8 @@ import {
   type SummarizationPolicy,
 } from './compaction-policy.js';
 import type { OnboardingLoader } from '../onboarding/loader.js';
+import type { ProductLoader } from '../products/loader.js';
+import type { OverwatchDrop } from '../products/types.js';
 
 export interface ContextBuildOpts {
   modelId: string;
@@ -30,6 +32,7 @@ export interface ContextBuildOpts {
   includeComms?: boolean;
   commsWindow?: number;
   kbQuery?: string;
+  activeProductId?: string;
 }
 
 export interface ContextPayload {
@@ -61,6 +64,8 @@ export class ContextManager {
   private lastCompactionNotice?: string;
   private onboardingLoader?: OnboardingLoader;
   private pendingOnboardingInjections = new Map<string, string[]>();
+  private pendingOverwatchDrops = new Map<string, OverwatchDrop[]>();
+  private productLoader?: ProductLoader;
   private teamMembers: TeamMemberStatus[] = [];
   private missions: MissionState[] = [];
 
@@ -70,6 +75,16 @@ export class ContextManager {
 
   setOnboardingLoader(loader: OnboardingLoader): void {
     this.onboardingLoader = loader;
+  }
+
+  setProductLoader(loader: ProductLoader): void {
+    this.productLoader = loader;
+  }
+
+  enqueueOverwatchDrop(sessionId: string, drop: OverwatchDrop): void {
+    const pending = this.pendingOverwatchDrops.get(sessionId) ?? [];
+    pending.push(drop);
+    this.pendingOverwatchDrops.set(sessionId, pending);
   }
 
   enqueueOnboardingContent(sessionId: string, content: string): void {
@@ -229,6 +244,42 @@ export class ContextManager {
         systemParts.push(missionCtx.text);
         layerBreakdown['missions'] = missionCtx.tokens;
         usedTokens += missionCtx.tokens;
+      }
+    }
+
+    if (opts.activeProductId && this.productLoader) {
+      const productCtx = this.productLoader.buildProductContextLayer(
+        opts.activeProductId,
+        opts.modelId,
+      );
+      if (productCtx) {
+        const productTokenBudget = Math.min(
+          Math.floor((systemTokenBudget - usedTokens) * 0.15),
+          3000,
+        );
+        if (productCtx.tokens <= productTokenBudget) {
+          systemParts.push(productCtx.text);
+          layerBreakdown['product'] = productCtx.tokens;
+          usedTokens += productCtx.tokens;
+        }
+      }
+    }
+
+    if (opts.sessionId) {
+      const overwatchDrops = this.pendingOverwatchDrops.get(opts.sessionId) ?? [];
+      if (overwatchDrops.length > 0) {
+        const dropTexts = overwatchDrops.map((d) => {
+          const prefix = d.type === 'hard' ? '**[OVERWATCH — BLOCKING]**' : '**[OVERWATCH]**';
+          return `${prefix} ${d.content}`;
+        });
+        const dropText = dropTexts.join('\n\n');
+        const dropTokens = estimateTokens(dropText);
+        if (usedTokens + dropTokens <= systemTokenBudget) {
+          systemParts.push(dropText);
+          layerBreakdown['overwatch'] = dropTokens;
+          usedTokens += dropTokens;
+          this.pendingOverwatchDrops.delete(opts.sessionId);
+        }
       }
     }
 
