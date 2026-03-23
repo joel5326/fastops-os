@@ -14,17 +14,62 @@ export class OpenAIAdapter extends BaseAdapter {
     this.client = new OpenAI({ apiKey: config.apiKey });
   }
 
+  /**
+   * Maps FastOps messages to OpenAI Chat Completions format:
+   * - assistant: optional text + optional tool_calls (function objects with id)
+   * - tool: tool_call_id + content (function output)
+   */
+  private toOpenAIMessages(request: ChatRequest): OpenAI.Chat.ChatCompletionMessageParam[] {
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: request.systemPrompt },
+    ];
+
+    for (const m of request.messages) {
+      if (m.role === 'system') continue;
+
+      if (m.role === 'assistant') {
+        const hasText = Boolean(m.content?.trim());
+        const hasTools = Boolean(m.toolCalls?.length);
+        if (!hasText && !hasTools) continue;
+
+        const assistant: OpenAI.Chat.ChatCompletionAssistantMessageParam = {
+          role: 'assistant',
+          content: hasText ? m.content : null,
+        };
+        if (hasTools) {
+          assistant.tool_calls = m.toolCalls!.map((tc) => ({
+            id: tc.id,
+            type: 'function' as const,
+            function: {
+              name: tc.name,
+              arguments: tc.arguments,
+            },
+          }));
+        }
+        messages.push(assistant);
+        continue;
+      }
+
+      if (m.role === 'tool') {
+        messages.push({
+          role: 'tool',
+          tool_call_id: m.toolCallId ?? '',
+          content: m.content,
+        });
+        continue;
+      }
+
+      messages.push({ role: 'user', content: m.content });
+    }
+
+    return messages;
+  }
+
   async chat(request: ChatRequest): Promise<ChatResponse> {
     return this.withRetry(async () => {
       const start = Date.now();
 
-      const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-        { role: 'system', content: request.systemPrompt },
-        ...request.messages.map((m) => ({
-          role: m.role as 'system' | 'user' | 'assistant',
-          content: m.content,
-        })),
-      ];
+      const messages = this.toOpenAIMessages(request);
 
       const params: OpenAI.Chat.ChatCompletionCreateParams = {
         model: request.model || this.models[0],
@@ -84,13 +129,7 @@ export class OpenAIAdapter extends BaseAdapter {
   }
 
   async *chatStream(request: ChatRequest): AsyncIterable<ChatChunk> {
-    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-      { role: 'system', content: request.systemPrompt },
-      ...request.messages.map((m) => ({
-        role: m.role as 'system' | 'user' | 'assistant',
-        content: m.content,
-      })),
-    ];
+    const messages = this.toOpenAIMessages(request);
 
     const stream = await this.client.chat.completions.create({
       model: request.model || this.models[0],
@@ -98,6 +137,16 @@ export class OpenAIAdapter extends BaseAdapter {
       max_tokens: request.maxTokens ?? 4096,
       stream: true,
       ...(request.temperature !== undefined && { temperature: request.temperature }),
+      ...(request.tools?.length && {
+        tools: request.tools.map((t) => ({
+          type: 'function' as const,
+          function: {
+            name: t.name,
+            description: t.description,
+            parameters: t.parameters,
+          },
+        })),
+      }),
     });
 
     for await (const chunk of stream) {
