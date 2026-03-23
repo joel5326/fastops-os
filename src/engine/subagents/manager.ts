@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import type { EventBus } from '../core/event-bus.js';
-import type { SessionManager, Session, SessionOpts } from '../core/session.js';
+import type { SessionManager, SessionOpts } from '../core/session.js';
 import type { InMemoryCommsBus } from '../comms/bus.js';
 import type {
   SubagentConfig,
@@ -43,7 +43,7 @@ export class SubagentManager {
     const session = this.sessions.create(config.modelId, {
       model: config.modelId,
       provider: config.modelId,
-    } as Partial<SessionOpts>);
+    } satisfies SessionOpts);
 
     const id = randomUUID();
     const now = new Date().toISOString();

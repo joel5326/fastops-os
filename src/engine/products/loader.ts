@@ -1,5 +1,5 @@
 import { join, resolve } from 'path';
-import { existsSync, readFileSync, readdirSync, statSync } from 'fs';
+import { existsSync, readFileSync, readdirSync } from 'fs';
 import { estimateTokens } from '../context/token-counter.js';
 import type {
   ProductRegistration,

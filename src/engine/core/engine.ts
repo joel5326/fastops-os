@@ -38,6 +38,14 @@ import { ProductLoader } from '../products/loader.js';
 import type { ProductRegistration, LoadedProduct } from '../products/types.js';
 import { SubagentManager } from '../subagents/manager.js';
 import type { SubagentConfig, SubagentSpawnResult, SubagentMessage } from '../subagents/types.js';
+import { KnowledgeStore } from '../overwatch/knowledge-store.js';
+import { OverwatchMonitor } from '../overwatch/monitor.js';
+import type { OverwatchState, ScanResult, OverwatchDropRecord, DropFeedback } from '../overwatch/types.js';
+import { AgentQuestionBus } from '../agents/question-bus.js';
+import type {
+  AgentQuestion,
+  AgentQuestionStatus,
+} from '../agents/question-bus.js';
 
 export interface EngineOptions {
   workingDirectory?: string;
@@ -69,15 +77,21 @@ export class FastOpsEngine {
   readonly compactionBroadcaster: CompactionBroadcaster;
   readonly productLoader: ProductLoader;
   readonly subagents: SubagentManager;
+  readonly knowledgeStore: KnowledgeStore;
+  readonly overwatch: OverwatchMonitor;
+  readonly questions: AgentQuestionBus;
 
   private registry: AdapterRegistry;
   readonly securityTier: string;
   private running = false;
   private workingDirectory: string;
   private compactionPolicyDoc: CompactionPolicyDocument;
+  /** When true, Overwatch starts with the engine (default: true if config.overwatch is absent). */
+  private readonly overwatchShouldRun: boolean;
 
   constructor(config: FastOpsConfig, opts?: EngineOptions) {
     this.securityTier = config.securityTier;
+    this.overwatchShouldRun = config.overwatch?.enabled !== false;
     this.workingDirectory = opts?.workingDirectory ?? process.cwd();
 
     this.events = new EventBus();
@@ -130,6 +144,21 @@ export class FastOpsEngine {
       sessions: this.sessions,
       comms: this.comms,
     });
+
+    this.knowledgeStore = new KnowledgeStore();
+    this.overwatch = new OverwatchMonitor(
+      this.knowledgeStore,
+      this.events,
+      this.contextManager,
+      config.overwatch ? {
+        softThreshold: 0.70,
+        hardThreshold: 0.85,
+        maxDropsPerSession: 5,
+        cooldownMs: config.overwatch.pollingIntervalMs ?? 120_000,
+      } : undefined,
+    );
+
+    this.questions = new AgentQuestionBus(this.events, this.comms);
 
     this.tools = new ToolExecutor();
     this.registerBuiltInTools();
@@ -251,12 +280,17 @@ export class FastOpsEngine {
       }
     });
 
+    if (this.overwatchShouldRun) {
+      this.overwatch.start();
+    }
+
     this.running = true;
     this.events.emit('engine.started', {
       adapters: available,
       middleware: this.middleware.list().map((m) => m.name),
       compactionPolicyVersion: this.compactionPolicyDoc.version,
       compactionPolicyHash: this.compactionPolicyDoc.policyHash,
+      overwatchActive: this.overwatch.isActive(),
     });
 
     console.log(`[FastOps Engine] Started with ${available.length} adapter(s): ${available.join(', ')}`);
@@ -269,6 +303,7 @@ export class FastOpsEngine {
   async stop(): Promise<void> {
     if (!this.running) return;
 
+    this.overwatch.stop();
     this.subagents.shutdown();
     this.stateStore.persistNow();
     this.stateStore.destroy();
@@ -358,6 +393,35 @@ export class FastOpsEngine {
     return this.subagents.sendMessage(msg);
   }
 
+  askAgentQuestion(input: {
+    from: string;
+    to: string;
+    question: string;
+    context?: string;
+  }): AgentQuestion {
+    return this.questions.ask(input);
+  }
+
+  answerAgentQuestion(input: {
+    questionId: string;
+    answer: string;
+    answeredBy: string;
+  }): AgentQuestion {
+    return this.questions.answer(input);
+  }
+
+  getAgentQuestion(id: string): AgentQuestion | undefined {
+    return this.questions.getById(id);
+  }
+
+  getAgentInbox(agentId: string, status?: AgentQuestionStatus): AgentQuestion[] {
+    return this.questions.getInbox(agentId, status);
+  }
+
+  getAgentOutbox(agentId: string, status?: AgentQuestionStatus): AgentQuestion[] {
+    return this.questions.getOutbox(agentId, status);
+  }
+
   registerProduct(registration: ProductRegistration): LoadedProduct {
     const loaded = this.productLoader.registerProduct(registration);
     this.events.emit('product.registered', {
@@ -370,6 +434,24 @@ export class FastOpsEngine {
 
   getProductContext(productId: string, modelId?: string) {
     return this.productLoader.buildProductContextLayer(productId, modelId);
+  }
+
+  scanSessionForPatterns(sessionId: string, modelId: string): ScanResult {
+    const session = this.sessions.get(sessionId);
+    if (!session) throw new Error(`Session not found: ${sessionId}`);
+    return this.overwatch.scanSession(sessionId, modelId, session.messages);
+  }
+
+  getOverwatchState(): OverwatchState {
+    return this.overwatch.getState();
+  }
+
+  getOverwatchDrops(sessionId?: string): OverwatchDropRecord[] {
+    return this.overwatch.getRecentDrops(sessionId);
+  }
+
+  submitOverwatchFeedback(dropId: string, feedback: DropFeedback): boolean {
+    return this.overwatch.recordFeedback(dropId, feedback);
   }
 
   private registerBuiltInTools(): void {
