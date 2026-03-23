@@ -42,6 +42,8 @@ export interface EngineState {
   todos: Record<string, TodoItem[]>;
   sessionCosts: Record<string, number>;
   totalCost: number;
+  compactionPolicyVersion?: number;
+  compactionPolicyHash?: string;
   startedAt: string;
   lastUpdatedAt: string;
 }
@@ -56,6 +58,20 @@ export class StateStore {
     this.filePath = filePath;
     this.debounceMs = debounceMs;
     this.state = this.loadOrCreate();
+  }
+
+  public hydrate(): void {
+    if (existsSync(this.filePath)) {
+      try {
+        const raw = readFileSync(this.filePath, 'utf8');
+        this.state = JSON.parse(raw);
+        console.log(`[StateStore] Successfully hydrated session state from ${this.filePath}`);
+      } catch (e) {
+        console.error(`[StateStore] Failed to hydrate state from ${this.filePath}. Proceeding with fresh state.`, e);
+      }
+    } else {
+      console.log(`[StateStore] No existing state file at ${this.filePath}. Starting fresh.`);
+    }
   }
 
   get(): EngineState {
@@ -155,8 +171,8 @@ export class StateStore {
       try {
         const raw = readFileSync(this.filePath, 'utf8');
         return JSON.parse(raw);
-      } catch {
-        // corrupted state file — start fresh
+      } catch (e) {
+        console.error(`[StateStore] Failed to load state from ${this.filePath}. Proceeding with fresh state.`, e);
       }
     }
 

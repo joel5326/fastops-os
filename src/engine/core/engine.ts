@@ -21,6 +21,16 @@ import { CostGateMiddleware } from '../middleware/builtin/cost-gate.js';
 import { AuditLogMiddleware } from '../middleware/builtin/audit-log.js';
 import { ContractEngine } from '../contracts/engine.js';
 import type { Contract, ClaimResult } from '../contracts/types.js';
+import { OnboardingLoader } from '../onboarding/loader.js';
+import type { OnboardingConfig } from '../onboarding/types.js';
+import {
+  CompactionPolicyStore,
+  type CompactionPolicyDocument,
+} from '../persistence/compaction-policy-store.js';
+import {
+  CompactionEventLedger,
+  detectPolicyDrift,
+} from '../persistence/compaction-event-ledger.js';
 
 export interface EngineOptions {
   workingDirectory?: string;
@@ -30,6 +40,7 @@ export interface EngineOptions {
   contractsStatePath?: string;
   dispatcherConfig?: Partial<DispatcherConfig>;
   toolPermissions?: Record<string, string[]>;
+  onboarding?: Partial<OnboardingConfig>;
 }
 
 export class FastOpsEngine {
@@ -43,11 +54,15 @@ export class FastOpsEngine {
   readonly middleware: MiddlewareStack;
   readonly costGate: CostGateMiddleware;
   readonly contracts: ContractEngine;
+  readonly onboarding: OnboardingLoader;
+  readonly compactionPolicyStore: CompactionPolicyStore;
+  readonly compactionLedger: CompactionEventLedger;
 
   private registry: AdapterRegistry;
   readonly securityTier: string;
   private running = false;
   private workingDirectory: string;
+  private compactionPolicyDoc: CompactionPolicyDocument;
 
   constructor(config: FastOpsConfig, opts?: EngineOptions) {
     this.securityTier = config.securityTier;
@@ -66,6 +81,17 @@ export class FastOpsEngine {
 
     const promptsDir = opts?.promptsDir ?? join(this.workingDirectory, 'src', 'engine', 'context', 'prompts');
     this.contextManager = new ContextManager(promptsDir);
+    const compactionPolicyPath = join(this.workingDirectory, '.fastops-engine', 'compaction-policy.json');
+    this.compactionPolicyStore = new CompactionPolicyStore(compactionPolicyPath);
+    this.compactionPolicyDoc = this.compactionPolicyStore.getDocument();
+    this.contextManager.setCompactionPolicy(this.compactionPolicyDoc.compactionPolicy);
+    this.contextManager.setSummarizationPolicy(this.compactionPolicyDoc.summarizationPolicy);
+    this.compactionLedger = new CompactionEventLedger(
+      join(this.workingDirectory, '.fastops-engine', 'compaction-events.jsonl'),
+    );
+
+    this.onboarding = new OnboardingLoader(this.workingDirectory, opts?.onboarding);
+    this.contextManager.setOnboardingLoader(this.onboarding);
 
     this.sessions = new SessionManager();
 
@@ -103,14 +129,39 @@ export class FastOpsEngine {
         workingDirectory: this.workingDirectory,
         securityTier: config.securityTier,
         allowElevatedBash: process.env.FASTOPS_BASH_ALLOW_ELEVATED === '1',
+        allowWriteBash: process.env.FASTOPS_BASH_ALLOW_WRITE === '1',
+        enterpriseBashStrict: process.env.FASTOPS_ENTERPRISE_BASH_STRICT === '1',
         toolAuditDir: auditDir,
       },
       this.middleware,
     );
+
+    this.events.on('tool.finished', (...args: unknown[]) => {
+      const p = args[0] as {
+        sessionId: string;
+        modelId: string;
+        tool: string;
+        isError: boolean;
+      };
+      if (p.isError) return;
+      const fired = this.onboarding.fireTrigger(p.sessionId, p.modelId, 'first_tool_use');
+      if (fired) {
+        this.contextManager.enqueueOnboardingContent(p.sessionId, fired.text);
+        this.events.emit('onboarding.triggered', {
+          sessionId: p.sessionId,
+          modelId: p.modelId,
+          tool: p.tool,
+          trigger: 'first_tool_use',
+          contentId: fired.delivery.contentId,
+        });
+      }
+    });
   }
 
   async start(): Promise<void> {
     if (this.running) throw new Error('Engine is already running.');
+
+    this.stateStore.hydrate();
 
     await this.registry.initialize();
 
@@ -121,6 +172,40 @@ export class FastOpsEngine {
       status: 'online' as const,
     }));
     this.stateStore.update({ models });
+
+    const previousState = this.stateStore.get();
+    const hasPolicyDrift = detectPolicyDrift({
+      previousPolicyHash: previousState.compactionPolicyHash,
+      previousPolicyVersion: previousState.compactionPolicyVersion,
+      currentPolicyHash: this.compactionPolicyDoc.policyHash,
+      currentPolicyVersion: this.compactionPolicyDoc.version,
+    });
+
+    if (hasPolicyDrift) {
+      const driftEvent = this.compactionLedger.append({
+        type: 'POLICY_DRIFT',
+        previousPolicyHash: previousState.compactionPolicyHash,
+        previousPolicyVersion: previousState.compactionPolicyVersion,
+        policyHash: this.compactionPolicyDoc.policyHash,
+        policyVersion: this.compactionPolicyDoc.version,
+        details: {
+          reason: 'engine_start_policy_mismatch',
+        },
+      });
+      this.events.emit('compaction.policy_drift', driftEvent);
+    }
+
+    const snapshotEvent = this.compactionLedger.append({
+      type: 'POLICY_SNAPSHOT',
+      policyHash: this.compactionPolicyDoc.policyHash,
+      policyVersion: this.compactionPolicyDoc.version,
+    });
+    this.events.emit('compaction.policy_snapshot', snapshotEvent);
+
+    this.stateStore.update({
+      compactionPolicyHash: this.compactionPolicyDoc.policyHash,
+      compactionPolicyVersion: this.compactionPolicyDoc.version,
+    });
 
     this.events.on('task.completed', (...args: unknown[]) => {
       const result = args[0] as { sessionId?: string; response?: { usage?: { cost?: number } } } | undefined;
@@ -133,10 +218,15 @@ export class FastOpsEngine {
     this.events.emit('engine.started', {
       adapters: available,
       middleware: this.middleware.list().map((m) => m.name),
+      compactionPolicyVersion: this.compactionPolicyDoc.version,
+      compactionPolicyHash: this.compactionPolicyDoc.policyHash,
     });
 
     console.log(`[FastOps Engine] Started with ${available.length} adapter(s): ${available.join(', ')}`);
     console.log(`[FastOps Engine] Middleware stack: ${this.middleware.list().map((m) => m.name).join(' → ')}`);
+    console.log(
+      `[FastOps Engine] Compaction policy v${this.compactionPolicyDoc.version} (${this.compactionPolicyDoc.policyHash})`,
+    );
   }
 
   async stop(): Promise<void> {
@@ -161,6 +251,8 @@ export class FastOpsEngine {
       model: opts?.model ?? adapter.models[0],
       maxMessages: opts?.maxMessages,
     });
+
+    this.onboarding.initSession(session.id, modelId);
 
     this.events.emit('session.created', { sessionId: session.id, modelId });
     return session;
