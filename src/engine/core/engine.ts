@@ -23,6 +23,7 @@ import { ContractEngine } from '../contracts/engine.js';
 import type { Contract, ClaimResult } from '../contracts/types.js';
 import { OnboardingLoader } from '../onboarding/loader.js';
 import type { OnboardingConfig } from '../onboarding/types.js';
+import { OnboardingTriggerWiring } from '../onboarding/triggers.js';
 import {
   CompactionPolicyStore,
   type CompactionPolicyDocument,
@@ -32,6 +33,7 @@ import {
   detectPolicyDrift,
 } from '../persistence/compaction-event-ledger.js';
 import { CompactionArtifactStore } from '../persistence/compaction-artifact-store.js';
+import { CompactionBroadcaster } from '../context/compaction-broadcast.js';
 
 export interface EngineOptions {
   workingDirectory?: string;
@@ -59,6 +61,8 @@ export class FastOpsEngine {
   readonly compactionPolicyStore: CompactionPolicyStore;
   readonly compactionLedger: CompactionEventLedger;
   readonly compactionArtifactStore: CompactionArtifactStore;
+  readonly triggerWiring: OnboardingTriggerWiring;
+  readonly compactionBroadcaster: CompactionBroadcaster;
 
   private registry: AdapterRegistry;
   readonly securityTier: string;
@@ -141,26 +145,16 @@ export class FastOpsEngine {
       this.middleware,
     );
 
-    this.events.on('tool.finished', (...args: unknown[]) => {
-      const p = args[0] as {
-        sessionId: string;
-        modelId: string;
-        tool: string;
-        isError: boolean;
-      };
-      if (p.isError) return;
-      const fired = this.onboarding.fireTrigger(p.sessionId, p.modelId, 'first_tool_use');
-      if (fired) {
-        this.contextManager.enqueueOnboardingContent(p.sessionId, fired.text);
-        this.events.emit('onboarding.triggered', {
-          sessionId: p.sessionId,
-          modelId: p.modelId,
-          tool: p.tool,
-          trigger: 'first_tool_use',
-          contentId: fired.delivery.contentId,
-        });
-      }
+    this.triggerWiring = new OnboardingTriggerWiring({
+      events: this.events,
+      onboarding: this.onboarding,
+      contextManager: this.contextManager,
+      comms: this.comms,
     });
+    this.triggerWiring.wireAll();
+
+    this.compactionBroadcaster = new CompactionBroadcaster(this.events, this.contextManager);
+    this.compactionBroadcaster.wire();
   }
 
   async start(): Promise<void> {
@@ -251,15 +245,26 @@ export class FastOpsEngine {
 
   createSession(modelId: string, opts?: Partial<SessionOpts>): Session {
     const adapter = this.registry.getOrThrow(modelId);
+    
+    // Check for previous compaction artifacts to resume from
+    const latestArtifact = opts?.sessionId ? this.compactionArtifactStore.getLatest(opts.sessionId) : null;
+    const initialMessages = latestArtifact ? [{
+      role: 'system',
+      content: latestArtifact.resumePrompt,
+      timestamp: new Date().toISOString()
+    }] : undefined;
+
     const session = this.sessions.create(modelId, {
+      ...opts,
       provider: modelId,
       model: opts?.model ?? adapter.models[0],
       maxMessages: opts?.maxMessages,
+      initialMessages,
     });
 
     this.onboarding.initSession(session.id, modelId);
 
-    this.events.emit('session.created', { sessionId: session.id, modelId });
+    this.events.emit('session.created', { sessionId: session.id, modelId, resumed: !!latestArtifact });
     return session;
   }
 
@@ -277,11 +282,23 @@ export class FastOpsEngine {
   }
 
   claimContract(contractId: string, modelId: string): ClaimResult {
+    if (!this.onboarding.hasModelCompletedOnboarding(modelId)) {
+      const reason = `ONBOARDING-GATE-001: ${modelId} must complete /onboard before claiming contracts`;
+      this.events.emit('contract.claim.blocked', { contractId, modelId, reason });
+      return { success: false, contractId, reason };
+    }
+
     const result = this.contracts.claim(contractId, modelId);
     if (result.success) {
       this.events.emit('contract.claimed', { contractId, modelId });
     }
     return result;
+  }
+
+  completeOnboarding(modelId: string): { success: boolean; modelId: string } {
+    this.onboarding.markModelOnboarded(modelId);
+    this.events.emit('onboarding.completed', { modelId, via: 'api' });
+    return { success: true, modelId };
   }
 
   private registerBuiltInTools(): void {

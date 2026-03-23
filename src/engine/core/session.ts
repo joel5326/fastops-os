@@ -4,9 +4,11 @@ import type { Message } from '../types.js';
 export type SessionStatus = 'idle' | 'working' | 'waiting_on_user' | 'error' | 'closed';
 
 export interface SessionOpts {
+  sessionId?: string;
   provider: string;
   model?: string;
   maxMessages?: number;
+  initialMessages?: Message[];
 }
 
 export interface Session {
@@ -29,13 +31,13 @@ export class SessionManager {
   private sessions = new Map<string, Session>();
 
   create(modelId: string, opts: SessionOpts): Session {
-    const id = `session-${crypto.randomBytes(4).toString('hex')}`;
+    const id = opts.sessionId || `session-${crypto.randomBytes(4).toString('hex')}`;
     const session: Session = {
       id,
       modelId,
       provider: opts.provider,
       model: opts.model ?? modelId,
-      messages: [],
+      messages: opts.initialMessages ? [...opts.initialMessages] : [],
       status: 'idle',
       tokensBurned: 0,
       costAccumulated: 0,
