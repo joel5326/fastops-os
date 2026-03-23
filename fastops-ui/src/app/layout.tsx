@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { ToastProvider } from '@/components/Toast';
 
 export const metadata: Metadata = {
   title: 'FastOps OS',
@@ -18,7 +19,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', margin: 0, height: '100vh', overflow: 'hidden' }}>
-        {children}
+        <ToastProvider>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );
